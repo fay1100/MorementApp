@@ -9,9 +9,11 @@ struct BoardView: View {
                 Image("Empty")
                     .font(.largeTitle)
                     .foregroundColor(.gray)
-                
+                Divider()
+                    .padding(.bottom, 700)
+
                 VStack {
-                    
+                     
                     HStack(spacing: 20) {
                                         Button(action: {
                                         }) {
@@ -33,6 +35,7 @@ struct BoardView: View {
                               .offset(y: 320)
                 }
             }
+            
             .navigationBarTitle("My Friends' Gathering", displayMode: .inline)
             .navigationBarItems(
                 leading: Button(action: {
@@ -49,6 +52,7 @@ struct BoardView: View {
                 }
             )
         }
+        
         .overlay(
             Group {
                 if showingPopover {
@@ -63,6 +67,7 @@ struct BoardView: View {
         )
 
     }
+    
 }
 
 struct BoardView_Previews: PreviewProvider {
