@@ -14,6 +14,9 @@
 		5A62D7CF2BC37A8700BBCE5C /* FianalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7CE2BC37A8700BBCE5C /* FianalTests.swift */; };
 		5A62D7D92BC37A8700BBCE5C /* FianalUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7D82BC37A8700BBCE5C /* FianalUITests.swift */; };
 		5A62D7DB2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */; };
+		5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */; };
+		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
+		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +47,9 @@
 		5A62D7D42BC37A8700BBCE5C /* FianalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FianalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A62D7D82BC37A8700BBCE5C /* FianalUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalUITests.swift; sourceTree = "<group>"; };
 		5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
+		5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DetailsView.swift; path = ../DetailsView.swift; sourceTree = "<group>"; };
+		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +103,9 @@
 				5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */,
 				5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */,
 				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
+				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
+				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
+				5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */,
 				5A62D7C32BC37A8700BBCE5C /* Preview Content */,
 			);
 			path = Fianal;
@@ -257,6 +266,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
+				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
+				5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */,
 				5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */,
 				5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */,
 			);
