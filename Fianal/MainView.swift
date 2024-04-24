@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MainView: View {
     var body: some View {
-        NavigationView {
+        NavigationStack  {
             VStack {
                 Image("Empty")
                 HStack(spacing: 10) {

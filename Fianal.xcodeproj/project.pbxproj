@@ -16,6 +16,9 @@
 		5A62D7DB2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */; };
 		5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */; };
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
+		5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701CFF2BD7B2FC00FD5800 /* userModel.swift */; };
+		5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D032BD7C7E500FD5800 /* ToolbarView.swift */; };
+		5A701D062BD7E08700FD5800 /* stikcers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D052BD7E08700FD5800 /* stikcers.swift */; };
 		5A8900F42BCE54A900F88EF8 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8900F32BCE54A900F88EF8 /* NoteView.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
 		E531664E2BD39DF300D168A4 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664D2BD39DF300D168A4 /* MainView.swift */; };
@@ -52,6 +55,10 @@
 		5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DetailsView.swift; path = ../DetailsView.swift; sourceTree = "<group>"; };
+		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
+		5A701CFF2BD7B2FC00FD5800 /* userModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = userModel.swift; sourceTree = "<group>"; };
+		5A701D032BD7C7E500FD5800 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
+		5A701D052BD7E08700FD5800 /* stikcers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stikcers.swift; sourceTree = "<group>"; };
 		5A8900F32BCE54A900F88EF8 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
 		E531664D2BD39DF300D168A4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -86,6 +93,9 @@
 		5A62D7B12BC37A8600BBCE5C = {
 			isa = PBXGroup;
 			children = (
+				5A701D052BD7E08700FD5800 /* stikcers.swift */,
+				5A701D032BD7C7E500FD5800 /* ToolbarView.swift */,
+				5A701CFF2BD7B2FC00FD5800 /* userModel.swift */,
 				5A62D7BC2BC37A8600BBCE5C /* Fianal */,
 				5A62D7CD2BC37A8700BBCE5C /* FianalTests */,
 				5A62D7D72BC37A8700BBCE5C /* FianalUITests */,
@@ -106,15 +116,16 @@
 		5A62D7BC2BC37A8600BBCE5C /* Fianal */ = {
 			isa = PBXGroup;
 			children = (
+				5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */,
 				5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */,
 				5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */,
-				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
 				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
 				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
 				5A8900F32BCE54A900F88EF8 /* NoteView.swift */,
 				E531664D2BD39DF300D168A4 /* MainView.swift */,
 				E531664F2BD3A74400D168A4 /* CreateBoardView.swift */,
 				5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */,
+				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
 				5A62D7C32BC37A8700BBCE5C /* Preview Content */,
 			);
 			path = Fianal;
@@ -275,6 +286,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */,
+				5A701D062BD7E08700FD5800 /* stikcers.swift in Sources */,
 				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,
 				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
@@ -283,6 +296,7 @@
 				5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */,
 				5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */,
 				E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */,
+				5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,11 +457,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Fianal/Fianal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Fianal/Preview Content\"";
+				DEVELOPMENT_TEAM = 25ANLCX5P6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "\"Our app needs access to your photo library so you can select a profile picture to personalize your account.\"\n\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -471,11 +488,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Fianal/Fianal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Fianal/Preview Content\"";
+				DEVELOPMENT_TEAM = 25ANLCX5P6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "\"Our app needs access to your photo library so you can select a profile picture to personalize your account.\"\n\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

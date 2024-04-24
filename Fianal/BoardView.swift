@@ -1,11 +1,12 @@
-
-import SwiftUI
+import  SwiftUI
 
 struct BoardView: View {
     @State private var showingPopover = false
     var body: some View {
-        NavigationView {
+        NavigationStack{
             ZStack {
+                Color("GrayLight") // تعيين اللون الخلفي للـ BoardView
+                    .ignoresSafeArea()
                 Image("Empty")
                     .font(.largeTitle)
                     .foregroundColor(.gray)
@@ -13,29 +14,10 @@ struct BoardView: View {
                     .padding(.bottom, 700)
 
                 VStack {
-                     
-                    HStack(spacing: 20) {
-                                        Button(action: {
-                                        }) {
-                                            Image(systemName: "star.bubble")
-                                                .foregroundColor(Color("MainColor"))
-                                                .font(.system(size: 48))
-                                        }
-                
-                                        Button(action: {
-                                        }) {
-                                            Text("Add your feelings")
-                                                .foregroundColor(.black)
-                                                .frame(width: 260, height: 50)
-                                                .background(Color("MainColor"))
-                                                .cornerRadius(10)
-                                        }
-                                    }
-                                .padding(.horizontal)
-                              .offset(y: 320)
+                    ToolbarView()
+                        .padding(.top , 550)
                 }
             }
-            
             .navigationBarTitle("My Friends' Gathering", displayMode: .inline)
             .navigationBarItems(
                 leading: Button(action: {
@@ -52,7 +34,6 @@ struct BoardView: View {
                 }
             )
         }
-        
         .overlay(
             Group {
                 if showingPopover {
@@ -60,14 +41,12 @@ struct BoardView: View {
                         .background(Color.white)
                         .cornerRadius(10)
                         .shadow(radius: 5)
-   .transition(.move(edge: .top))
-                    .animation(.easeOut(duration: 0.2))
+                        .transition(.move(edge: .top))
+                        .animation(.easeOut(duration: 0.2))
                 }
             }, alignment: .center
         )
-
     }
-    
 }
 
 struct BoardView_Previews: PreviewProvider {
@@ -77,3 +56,4 @@ struct BoardView_Previews: PreviewProvider {
 }
 
 
+  

@@ -14,17 +14,18 @@ struct NoteView: View {
     @State private var textAlignment: TextAlignment = .leading
     @State private var activeToolbarOption: ToolbarOption = .none
     @State private var isToggleOn = false
+    @Environment(\.dismiss) var dismiss
 
     let availableColors: [Color] = [
-        Color(red: 1.0, green: 0.8, blue: 0.8), // pink
-        Color(red: 1.0, green: 1.0, blue: 0.6), // yellow
-        Color(red: 0.96, green: 0.96, blue: 0.86), // beige
-        Color(red: 0.6, green: 1.0, blue: 0.6), // mint
-        Color(red: 0.53, green: 0.81, blue: 0.92) // skyBlue
+        Color("pink"), // pink
+        Color("yellow2"), // yellow
+        Color("lightOrang"), // beige
+        Color("mint"), // mint
+        Color("skyBlue") // skyBlue
     ]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
                 VStack {
                     Divider()
 
@@ -148,7 +149,9 @@ struct NoteView: View {
                     Spacer()
                 }
                 .navigationBarItems(
-                    leading: Button(action: {}) {
+                    leading: Button(action: {
+                        dismiss()
+                    }) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(Color("MainColor"))
                     },
@@ -157,7 +160,8 @@ struct NoteView: View {
                             .foregroundColor(Color("MainColor"))
                     }
                 )
-            
+                .navigationBarBackButtonHidden(true)
+
         }
     }
 }

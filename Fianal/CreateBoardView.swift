@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct CreateBoardView: View {
+    @Environment(\.dismiss) var dismiss
     @State private var boardName = ""
     @State private var selectedDate = Date()
     @State private var isDatePickerShown = false
@@ -16,7 +17,7 @@ struct CreateBoardView: View {
     let thumbnails = ["upload","thumbnail1", "thumbnail2", "thumbnail3" ]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 TextField("Name of the board", text: $boardName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -96,14 +97,14 @@ struct CreateBoardView: View {
             .navigationTitle("Create New Board") // Title of the navigation bar
             .navigationBarItems(leading:
                 Button("Cancel") {
-                    // Action for cancel button
-                },
+                dismiss()                },
                 trailing:
                 Button("Done") {
                     // Action for create button
                 }
             )
             .accentColor(Color("MainColor"))
+            .navigationBarBackButtonHidden(true) 
         }
     }
 }
