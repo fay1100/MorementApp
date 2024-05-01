@@ -42,7 +42,9 @@ struct CustomMenu: View {
 
 struct ToolbarView: View {
     @State private var navigateToNoteView = false
+    @State private var navigateToStickersView = false
     @State private var showCustomMenu = false
+    
     
     var body: some View {
         NavigationStack {
@@ -74,7 +76,8 @@ struct ToolbarView: View {
                     
                     Divider()
                     Button(action: {
-                        // أفعال هذا الزر
+                        navigateToStickersView = true
+                        
                     }) {
                         Image("Image") // تأكد من وجود هذه الصورة في مشروعك
                             .resizable()
@@ -87,7 +90,10 @@ struct ToolbarView: View {
                 .frame(width: 360, height: 90)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 25))
-                
+            
+            NavigationLink(destination: stickersView(), isActive: $navigateToStickersView) { // Navigation to StickersView
+                EmptyView()
+            }
                 // عرض الـ CustomMenu
                 if showCustomMenu {
                     CustomMenu(showMenu: $showCustomMenu)

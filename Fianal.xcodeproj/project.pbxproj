@@ -18,9 +18,9 @@
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
 		5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701CFF2BD7B2FC00FD5800 /* userModel.swift */; };
 		5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D032BD7C7E500FD5800 /* ToolbarView.swift */; };
-		5A701D062BD7E08700FD5800 /* stikcers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D052BD7E08700FD5800 /* stikcers.swift */; };
 		5A8900F42BCE54A900F88EF8 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8900F32BCE54A900F88EF8 /* NoteView.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
+		7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7728B55C2BE2A34E0041239B /* stickersView.swift */; };
 		E531664E2BD39DF300D168A4 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664D2BD39DF300D168A4 /* MainView.swift */; };
 		E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664F2BD3A74400D168A4 /* CreateBoardView.swift */; };
 		E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53166512BE258A500D168A4 /* OnBoardingView.swift */; };
@@ -59,9 +59,9 @@
 		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
 		5A701CFF2BD7B2FC00FD5800 /* userModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = userModel.swift; sourceTree = "<group>"; };
 		5A701D032BD7C7E500FD5800 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
-		5A701D052BD7E08700FD5800 /* stikcers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stikcers.swift; sourceTree = "<group>"; };
 		5A8900F32BCE54A900F88EF8 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
+		7728B55C2BE2A34E0041239B /* stickersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stickersView.swift; sourceTree = "<group>"; };
 		E531664D2BD39DF300D168A4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		E531664F2BD3A74400D168A4 /* CreateBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateBoardView.swift; sourceTree = "<group>"; };
 		E53166512BE258A500D168A4 /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
@@ -95,7 +95,7 @@
 		5A62D7B12BC37A8600BBCE5C = {
 			isa = PBXGroup;
 			children = (
-				5A701D052BD7E08700FD5800 /* stikcers.swift */,
+				7728B55C2BE2A34E0041239B /* stickersView.swift */,
 				5A701D032BD7C7E500FD5800 /* ToolbarView.swift */,
 				5A701CFF2BD7B2FC00FD5800 /* userModel.swift */,
 				5A62D7BC2BC37A8600BBCE5C /* Fianal */,
@@ -290,9 +290,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */,
-				5A701D062BD7E08700FD5800 /* stikcers.swift in Sources */,
 				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,
+				7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */,
 				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
 				5A8900F42BCE54A900F88EF8 /* NoteView.swift in Sources */,
 				5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */,
