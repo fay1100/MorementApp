@@ -11,7 +11,7 @@ import SwiftUI
 struct FianalApp: App {
     var body: some Scene {
         WindowGroup {
-            BoardView()
+            MainView().environmentObject(BoardViewModel())
         }
     }
 }
