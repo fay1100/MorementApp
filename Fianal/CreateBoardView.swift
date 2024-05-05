@@ -20,6 +20,10 @@ struct CreateBoardView: View {
 
     let thumbnails = ["upload", "thumbnail1", "thumbnail2", "thumbnail3"]
 
+    var isDoneButtonDisabled: Bool {
+        return selectedThumbnail == nil || boardName.isEmpty
+    }
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -110,9 +114,10 @@ struct CreateBoardView: View {
                 Button("Done") {
                     if let thumbnail = selectedThumbnail, !boardName.isEmpty {
                         viewModel.createBoard(name: boardName, image: thumbnail)
+                        dismiss()
                     }
-                    dismiss()
                 }
+                .disabled(isDoneButtonDisabled) // Disable button based on conditions
             )
             .accentColor(Color("MainColor"))
             .navigationBarBackButtonHidden(true)
@@ -125,6 +130,7 @@ struct CreateBoardView_Previews: PreviewProvider {
         CreateBoardView().environmentObject(BoardViewModel())
     }
 }
+
 
 //import SwiftUI
 //

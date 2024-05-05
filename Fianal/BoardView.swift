@@ -1,36 +1,58 @@
-import  SwiftUI
+import SwiftUI
 
 struct BoardView: View {
     @State private var showingPopover = false
+    var noteModel: NoteModel  // Assume NoteModel is defined correctly elsewhere
+    
+    @State private var isSelected = false  // Added state for selection
+
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             ZStack {
-                Color("GrayLight") // تعيين اللون الخلفي للـ BoardView
+                Color("GrayLight")  // Ensure this color is defined in your asset catalog
                     .ignoresSafeArea()
-                Image("Empty")
-                    .font(.largeTitle)
-                    .foregroundColor(.gray)
-                Divider()
-                    .padding(.bottom, 700)
 
                 VStack {
+                    Text(noteModel.noteText)  // Display the text from the note
+                        .font(.title)
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 10).fill(noteModel.noteColor))
+                        .foregroundColor(noteModel.textColor)
+                        .multilineTextAlignment(noteModel.textAlignment)
+                        .padding()
+                        .rotationEffect(.degrees(isSelected ? 5 : 0)) // Rotation effect
+                        .scaleEffect(isSelected ? 1.1 : 1.0) // Scale effect
+                        .onTapGesture {
+                            withAnimation {
+                                isSelected.toggle() // Toggle selection
+                            }
+                        }
+
+                    Spacer()
+                }
+
+                Divider()
+                    .padding(.bottom, 700)
+                
+                VStack {
+                    // Assuming ToolbarView is defined and correctly implemented
                     ToolbarView()
-                        .padding(.top , 550)
+                        .padding(.top, 550)
                 }
             }
             .navigationBarTitle("My Friends' Gathering", displayMode: .inline)
             .navigationBarItems(
                 leading: Button(action: {
-
+                    // Action for back navigation
                 }) {
                     Image(systemName: "chevron.left")
-                        .foregroundColor(Color("MainColor"))
+                        .foregroundColor(Color("MainColor"))  // Ensure this color is defined
                 },
                 trailing: Button(action: {
-                    self.showingPopover = true
+                    showingPopover = true
                 }) {
                     Text("Details")
-                        .foregroundColor(Color("MainColor"))
+                        .foregroundColor(Color("MainColor"))  // Ensure this color is defined
                 }
             )
         }
@@ -42,7 +64,6 @@ struct BoardView: View {
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .transition(.move(edge: .top))
-                        .animation(.easeOut(duration: 0.2))
                 }
             }, alignment: .center
         )
@@ -51,9 +72,6 @@ struct BoardView: View {
 
 struct BoardView_Previews: PreviewProvider {
     static var previews: some View {
-        BoardView()
+        BoardView(noteModel: NoteModel())  // Provide a dummy NoteModel for previews
     }
 }
-
-
-  
