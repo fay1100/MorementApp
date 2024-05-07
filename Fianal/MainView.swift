@@ -132,10 +132,10 @@ struct MainView: View {
             Button(action: {
 //
             }) {
-                Image(systemName: "plus.magnifyingglass")
+                Image(systemName: "person.2")
             }
             NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-                Image(systemName: "rectangle.badge.plus")
+                Image(systemName: "plus.rectangle")
             }
         }
     }
