@@ -43,7 +43,6 @@ struct BoardView: View {
             .navigationBarTitle("My Friends' Gathering", displayMode: .inline)
             .navigationBarItems(
                 leading: Button(action: {
-                    // Action for back navigation
                 }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(Color("MainColor"))  // Ensure this color is defined
@@ -52,7 +51,7 @@ struct BoardView: View {
                     showingPopover = true
                 }) {
                     Text("Details")
-                        .foregroundColor(Color("MainColor"))  // Ensure this color is defined
+                        .foregroundColor(Color("MainColor"))
                 }
             )
         }
@@ -61,8 +60,8 @@ struct BoardView: View {
                 if showingPopover {
                     DetailsView(showingPopover: $showingPopover)
                         .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
+                        .cornerRadius(16)
+                        .shadow(radius: 8)
                         .transition(.move(edge: .top))
                 }
             }, alignment: .center
@@ -72,6 +71,6 @@ struct BoardView: View {
 
 struct BoardView_Previews: PreviewProvider {
     static var previews: some View {
-        BoardView(noteModel: NoteModel())  // Provide a dummy NoteModel for previews
+        BoardView(noteModel: NoteModel())
     }
 }

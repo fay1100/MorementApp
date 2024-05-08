@@ -1,5 +1,6 @@
 
 import SwiftUI
+
 struct DetailsView: View {
     @Binding var showingPopover: Bool
     @State private var isAcceptingResponses = true
@@ -7,27 +8,15 @@ struct DetailsView: View {
 
     var body: some View {
         VStack(alignment: .center) {
-            // زر لإغلاق العرض
-            Button(action: {
-                self.showingPopover = false
-            }) {
-                Image(systemName: "x.circle")
-                    .foregroundColor(.black)
-                    .font(.system(size: 20, weight: .light))
-            }
-            .padding(.leading, -160)
-            .padding(.top, 15)
-
             Text("Friends Gathering")
-                .font(.body)
-                .padding([.leading, .trailing, .top])
+                .padding(.top)
+            
             Divider()
                 .padding(.horizontal)
 
             HStack(alignment: .center) {
                 Text("1245667727")
-                    .font(.title)
-                    .foregroundColor(Color("GrayMid"))
+                    .foregroundColor(Color.gray)
                     .padding()
 
                 Button(action: {
@@ -39,24 +28,36 @@ struct DetailsView: View {
                 }
             }
 
-            Button(action: {
-                self.showingShareSheet = true
-            }) {
-                HStack(alignment: .center, spacing: 20) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.title2)
+            HStack {
+                Button(action: {
+                    self.showingPopover = false
+                }) {
+                    Text("Cancel")
                         .foregroundColor(.black)
-                    
-                    Text("Share")
-                        .font(.body)
-                        .foregroundColor(.black)
+                        .frame(width: 115, height: 50)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color("MainColor"), lineWidth: 1)
+                        )
                 }
-                .frame(width: 120, height: 50)
-                .background(Color("MainColor"))
-                .cornerRadius(10)
-            }
-            .sheet(isPresented: $showingShareSheet) {
-                ActivityView(activityItems: ["Friends Gathering: 1245667727"])
+
+                Button(action: {
+                    self.showingShareSheet = true
+                }) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 20, weight: .light))
+                        Text("Share")
+                            .font(.body)
+                    }
+                    .foregroundColor(.black)
+                    .frame(width: 115, height: 50)
+                    .background(Color("MainColor"))
+                    .cornerRadius(10)
+                }
+
             }
 
             Toggle(isOn: $isAcceptingResponses) {
@@ -66,10 +67,13 @@ struct DetailsView: View {
 
             Spacer()
         }
-        .frame(width: 350, height: 300)
+        .frame(width: 270, height: 240)
         .background(Color.white)
-        .cornerRadius(15)
-        .shadow(radius: 30)
+        .cornerRadius(16)
+        .shadow(radius: 20)
+        .sheet(isPresented: $showingShareSheet) {
+            ActivityView(activityItems: ["Friends Gathering: 1245667727"])
+        }
     }
 }
 
