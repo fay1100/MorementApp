@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B15CA4C2BEECB0F00F7A6CE /* NoteToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */; };
+		0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */; };
 		5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */; };
 		5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */; };
 		5A62D7C22BC37A8700BBCE5C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */; };
@@ -18,7 +20,6 @@
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
 		5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701CFF2BD7B2FC00FD5800 /* userModel.swift */; };
 		5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D032BD7C7E500FD5800 /* ToolbarView.swift */; };
-		5A8900F42BCE54A900F88EF8 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A8900F32BCE54A900F88EF8 /* NoteView.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
 		7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7728B55C2BE2A34E0041239B /* stickersView.swift */; };
 		E531664E2BD39DF300D168A4 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664D2BD39DF300D168A4 /* MainView.swift */; };
@@ -46,6 +47,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteToolbar.swift; sourceTree = "<group>"; };
+		0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
 		5A62D7BA2BC37A8600BBCE5C /* Fianal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fianal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalApp.swift; sourceTree = "<group>"; };
 		5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -61,7 +64,6 @@
 		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
 		5A701CFF2BD7B2FC00FD5800 /* userModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = userModel.swift; sourceTree = "<group>"; };
 		5A701D032BD7C7E500FD5800 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
-		5A8900F32BCE54A900F88EF8 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
 		7728B55C2BE2A34E0041239B /* stickersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stickersView.swift; sourceTree = "<group>"; };
 		E531664D2BD39DF300D168A4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -128,9 +130,10 @@
 				E53166512BE258A500D168A4 /* OnBoardingView.swift */,
 				E53166552BEAD50C00D168A4 /* OnboadingData.swift */,
 				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
+				0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */,
+				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
 				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
 				E532E3E92BEBE70000155F04 /* JoinView.swift */,
-				5A8900F32BCE54A900F88EF8 /* NoteView.swift */,
 				E531664D2BD39DF300D168A4 /* MainView.swift */,
 				E531664F2BD3A74400D168A4 /* CreateBoardView.swift */,
 				5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */,
@@ -298,10 +301,10 @@
 				5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */,
 				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,
+				0B15CA4C2BEECB0F00F7A6CE /* NoteToolbar.swift in Sources */,
 				7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */,
 				E53166562BEAD50C00D168A4 /* OnboadingData.swift in Sources */,
 				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
-				5A8900F42BCE54A900F88EF8 /* NoteView.swift in Sources */,
 				5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */,
 				5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */,
 				5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */,
@@ -309,6 +312,7 @@
 				E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */,
 				E532E3EA2BEBE70000155F04 /* JoinView.swift in Sources */,
 				5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */,
+				0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

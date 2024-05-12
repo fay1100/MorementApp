@@ -11,7 +11,9 @@ import SwiftUI
 struct FianalApp: App {
     var body: some Scene {
         WindowGroup {
-            OnboardingView()
+            // OnboardingView()
+            BoardView(addStickere: Sticker())
         }
     }
+    
 }

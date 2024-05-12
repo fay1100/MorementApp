@@ -1,13 +1,17 @@
+
 import SwiftUI
 
 struct CustomMenu: View {
-    @Binding var showMenu: Bool // Binding للتحكم في العرض من خارج الكومبوننت
+    @Binding var showMenu: Bool
+      var addNoteAction: () -> Void
 
     var body: some View {
+        
         VStack(alignment: .leading, spacing: 20) {
             Button(action: {
                 withAnimation {
                     self.showMenu = false
+                    addNoteAction()  // استدعاء الدالة عند النقر
                 }
             }) {
                 HStack {
@@ -40,32 +44,27 @@ struct CustomMenu: View {
     }
 }
 
+
 struct ToolbarView: View {
-    @State private var navigateToNoteView = false
-    @State private var navigateToStickersView = false
-    @State private var showCustomMenu = false
-    
-    
+    var addNoteAction: () -> Void
+    @Binding var showCustomMenu: Bool
+    @Binding var navigateToStickersView: Bool
+    @Binding var droppedStickers: [Sticker]
+
     var body: some View {
         NavigationStack {
             ZStack {
                 HStack {
-                    Button(action: {
-                        navigateToNoteView = true
-                    }) {
-                        Image("Tools") // تأكد من وجود هذه الصورة في مشروعك
+                    Button(action: addNoteAction) {
+                        Image(systemName: "square.and.pencil")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .foregroundColor(.yellow)
-                            .frame(width: 100, height: 100)
-                            .padding(.top, 60)
-                            .padding(.trailing, 10)
+                            .frame(width: 30, height: 30)
+                            .padding(30)
                     }
                     Divider()
-                    
-                    Button(action: {
-                        showCustomMenu.toggle()
-                    }) {
+                    Button(action: { showCustomMenu.toggle() }) {
                         Image(systemName: "camera")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -73,44 +72,35 @@ struct ToolbarView: View {
                             .frame(width: 30, height: 30)
                             .padding(30)
                     }
-                    
                     Divider()
-                    Button(action: {
-                        navigateToStickersView = true
-                        
-                    }) {
-                        Image("Image") // تأكد من وجود هذه الصورة في مشروعك
+                    NavigationLink(destination: StickerBoard(navigateToBoardView: $navigateToStickersView, droppedStickers: $droppedStickers), isActive: $navigateToStickersView) {
+                        Image(systemName: "photo.on.rectangle.angled")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .foregroundColor(.yellow)
-                            .frame(width: 55, height: 50)
-                            .padding()
+                            .frame(width: 30, height: 30)
+                            .padding(30)
                     }
                 }
                 .frame(width: 360, height: 90)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 25))
-            
-            NavigationLink(destination: stickersView(), isActive: $navigateToStickersView) { // Navigation to StickersView
-                EmptyView()
-            }
-                // عرض الـ CustomMenu
                 if showCustomMenu {
-                    CustomMenu(showMenu: $showCustomMenu)
+                    CustomMenu(showMenu: $showCustomMenu, addNoteAction: addNoteAction)
                         .transition(.move(edge: .top))
-                        .offset(x: 35, y: -110) // إزاحة القائمة لظهورها بجانب الزر
+                        .offset(x: 35, y: -110)
                 }
             }
-            
-            NavigationLink(destination: NoteView(), isActive: $navigateToNoteView) {
-                EmptyView()
-            }
         }
-    }
-    
-    struct ToolbarView_Previews: PreviewProvider {
-        static var previews: some View {
-            ToolbarView()
-        }
+        .padding(.bottom, 30)
     }
 }
+struct ToolbarView_Previews: PreviewProvider {
+    @State static var showCustomMenu = false
+    @State static var navigateToStickersView = false
+    @State static var droppedStickers = [Sticker()]
+
+    static var previews: some View {
+        ToolbarView(addNoteAction: {}, showCustomMenu: $showCustomMenu, navigateToStickersView: $navigateToStickersView, droppedStickers: $droppedStickers)
+    }
+} 
