@@ -46,6 +46,8 @@ struct OnboardingView: View {
                         .foregroundColor(.black)
                         .cornerRadius(8)
                 }
+                .disabled(currentPage == onboardingData.count - 1 && userName.isEmpty)
+                .opacity(currentPage == onboardingData.count - 1 && userName.isEmpty ? 0.5 : 1)
                 .padding()
 
                 Spacer()

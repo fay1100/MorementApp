@@ -126,12 +126,12 @@
 			children = (
 				5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */,
 				5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */,
+				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
 				5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */,
 				E53166512BE258A500D168A4 /* OnBoardingView.swift */,
 				E53166552BEAD50C00D168A4 /* OnboadingData.swift */,
 				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
 				0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */,
-				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
 				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
 				E532E3E92BEBE70000155F04 /* JoinView.swift */,
 				E531664D2BD39DF300D168A4 /* MainView.swift */,
