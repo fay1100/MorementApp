@@ -50,6 +50,7 @@ struct ToolbarView: View {
     @Binding var showCustomMenu: Bool
     @Binding var navigateToStickersView: Bool
     @Binding var droppedStickers: [Sticker]
+    @Binding var inputImage: UIImage?  // Added binding for inputImage
 
     var body: some View {
         NavigationStack {
@@ -73,7 +74,7 @@ struct ToolbarView: View {
                             .padding(30)
                     }
                     Divider()
-                    NavigationLink(destination: StickerBoard(navigateToBoardView: $navigateToStickersView, droppedStickers: $droppedStickers), isActive: $navigateToStickersView) {
+                    NavigationLink(destination: StickerBoard(navigateToBoardView: $navigateToStickersView, droppedStickers: $droppedStickers, inputImage: $inputImage), isActive: $navigateToStickersView) {
                         Image(systemName: "photo.on.rectangle.angled")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -98,9 +99,10 @@ struct ToolbarView: View {
 struct ToolbarView_Previews: PreviewProvider {
     @State static var showCustomMenu = false
     @State static var navigateToStickersView = false
-    @State static var droppedStickers = [Sticker()]
+    @State static var droppedStickers = [Sticker(imageName: "sampleSticker")]
+    @State static var inputImage: UIImage? = nil  // Provide a default value for the image
 
     static var previews: some View {
-        ToolbarView(addNoteAction: {}, showCustomMenu: $showCustomMenu, navigateToStickersView: $navigateToStickersView, droppedStickers: $droppedStickers)
+        ToolbarView(addNoteAction: {}, showCustomMenu: $showCustomMenu, navigateToStickersView: $navigateToStickersView, droppedStickers: $droppedStickers, inputImage: $inputImage)
     }
-} 
+}

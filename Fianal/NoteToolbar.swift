@@ -15,16 +15,19 @@ class NoteModel: ObservableObject, Identifiable {
     @Published var isBold: Bool
     @Published var position: CGPoint
     @Published var size: CGSize
+    @Published var dragOffset: CGPoint  // Correctly declare the property
 
-    init(noteText: String, noteColor: Color, textColor: Color, isBold: Bool = false, position: CGPoint = .zero, size: CGSize = CGSize(width: 100, height: 100)) {
+    init(noteText: String, noteColor: Color, textColor: Color, isBold: Bool = false, position: CGPoint = .zero, size: CGSize = CGSize(width: 100, height: 100), dragOffset: CGPoint = .zero) {
         self.noteText = noteText
         self.noteColor = noteColor
         self.textColor = textColor
         self.isBold = isBold
         self.position = position
         self.size = size
+        self.dragOffset = dragOffset  // Initialize the property
     }
 }
+
 struct NoteToolbar: View {
     @Binding var notes: [NoteModel]
     @Binding var note: NoteModel?

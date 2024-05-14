@@ -9,11 +9,13 @@ import SwiftUI
 
 @main
 struct FianalApp: App {
+    @State private var inputImage: UIImage? = nil
+    @State private var stickerImageName: String = "defaultImageName"  // Default image name for stickers
+
     var body: some Scene {
         WindowGroup {
-            // OnboardingView()
-            BoardView(addStickere: Sticker())
+            // Assuming BoardView requires a parameter named 'addSticker' rather than 'sticker'
+            BoardView(inputImage: $inputImage, addSticker: Sticker(imageName: stickerImageName))
         }
     }
-    
 }

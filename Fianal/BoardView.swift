@@ -1,35 +1,43 @@
 import SwiftUI
 
-
 struct BoardView: View {
-    //@Binding
+    @Binding var inputImage: UIImage?
+    @State var addSticker: Sticker
+    @State var droppedStickers: [Sticker] = []
+    @State private var stickerPositions: [UUID: CGSize] = [:]
     
-    @State var addStickere: Sticker
-   // @Binding
-    @State  var droppedStickers: [Sticker] = []
     @State private var notes: [NoteModel] = []
     @State private var selectedNote: NoteModel?
     @State private var showNoteToolbar = false
-    @State private var isDragging = false
     @State private var currentScale: CGFloat = 1.0
     @State private var showCustomMenu = false
     @State private var navigateToStickersView = false
-
-//    public init(droppedStickers: Binding<[Sticker]>,addStickere: Binding<Sticker>) {
-//        self._droppedStickers = droppedStickers
-//        self._addStickere = addStickere
-//
-//    }
+    @State private var remainingTime = 86400  // 24 hours in seconds
+    @State private var participantCount = 5
     
-//    public init(addStickere: Binding<Sticker>) {
-//      //  self._droppedStickers = droppedStickers
-//        self._addStickere = addStickere
-//
-//    }
-
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     var body: some View {
         NavigationStack {
             VStack {
+                HStack {
+                    Text(formatTime(remainingTime))
+                        .font(.system(size: 20))
+                        .bold()
+                        .foregroundColor(.orange)
+                        .padding([.leading, .top], 10)
+                    
+                    Image(systemName: "person.2.fill")
+                        .foregroundColor(.orange)
+                        .padding(.top, 10)
+                    
+                    Text("\(participantCount)")
+                        .font(.system(size: 20))
+                        .bold()
+                        .foregroundColor(.orange)
+                }
+                .padding(.top, 140)
+                
                 GeometryReader { geometry in
                     ZStack {
                         Color("GrayLight").ignoresSafeArea()
@@ -38,15 +46,18 @@ struct BoardView: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: sticker.size.width * currentScale, height: sticker.size.height * currentScale)
-                                .position(x: sticker.position.width, y: sticker.position.height)
+                                .position(x: geometry.size.width / 2 + (stickerPositions[sticker.id]?.width ?? 0),
+                                          y: geometry.size.height / 2 + (stickerPositions[sticker.id]?.height ?? 0))
                                 .gesture(
                                     DragGesture()
                                         .onChanged { value in
-                                            sticker.position.width += value.translation.width
-                                            sticker.position.height += value.translation.height
+                                            stickerPositions[sticker.id] = CGSize(width: value.translation.width, height: value.translation.height)
                                         }
-                                        .onEnded { _ in
-                                            isDragging = false
+                                        .onEnded { value in
+                                            let finalPosition = CGSize(width: (stickerPositions[sticker.id]?.width ?? 0) + value.translation.width,
+                                                                       height: (stickerPositions[sticker.id]?.height ?? 0) + value.translation.height)
+                                            stickerPositions[sticker.id] = finalPosition
+                                            currentScale = 1.0  // Reset scale after dragging
                                         }
                                 )
                                 .simultaneousGesture(
@@ -61,102 +72,64 @@ struct BoardView: View {
                                         }
                                 )
                         }
-
-                        ScrollView([.horizontal, .vertical]) {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                ForEach($notes, id: \.id) { $note in
-                                    NoteViewWithGesture(note: $note)
-                                        .frame(width: note.size.width, height: note.size.height)
-                                        .position(x: note.position.x, y: note.position.y)
-                                        .onTapGesture {
-                                            selectedNote = note
-                                            showNoteToolbar = true
-                                        }
-                                }
-                            }
-                            .padding()
-                        }
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
                 }
                 Spacer()
-                if let note = selectedNote, showNoteToolbar {
+                if let _ = selectedNote, showNoteToolbar {
                     NoteToolbar(notes: $notes, note: $selectedNote)
                         .padding(.top, 20)
                 } else {
-                    ToolbarView(addNoteAction: addNewNote, showCustomMenu: $showCustomMenu, navigateToStickersView: $navigateToStickersView, droppedStickers: $droppedStickers)
+                    ToolbarView(addNoteAction: addNewNote, showCustomMenu: $showCustomMenu, navigateToStickersView: $navigateToStickersView, droppedStickers: $droppedStickers, inputImage: $inputImage)
                         .padding(.top, 20)
                 }
             }
-            
             .background(Color("GrayLight"))
             .navigationTitle("My Friends' Gathering")
             .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(edges: .all)
             .onAppear {
-                
-                droppedStickers.append(addStickere)
+                droppedStickers.append(addSticker)
+            }
+            .onReceive(timer) { _ in
+                if remainingTime > 0 {
+                    remainingTime -= 1
+                }
             }
         }
     }
-
-    func addNewNote() {
-        let newNote = NoteModel(
-            noteText: "New Note",
-            noteColor: Color.random,
-            textColor: .white,
-            position: CGPoint.zero,
-            size: CGSize(width: 100, height: 100)
-        )
-        notes.append(newNote)
-        selectedNote = nil
-    }
-}
-
-extension Color {
-    static var random: Color {
-        Color(red: Double.random(in: 0...1), green: Double.random(in: 0...1), blue: Double.random(in: 0...1))
-    }
-}
-struct NoteViewWithGesturre: View {
-    @Binding var note: NoteModel
-    @GestureState private var dragState = CGSize.zero
-    @GestureState private var magnifyState = CGFloat(1.0)
-
-    var body: some View {
-        Text(note.noteText)
-            .frame(width: note.size.width * magnifyState, height: note.size.height * magnifyState)
-            .background(note.noteColor)
-            .foregroundColor(note.textColor)
-            .cornerRadius(10)
-            .position(x: note.position.x + dragState.width, y: note.position.y + dragState.height)
-            .gesture(
-                DragGesture()
-                    .updating($dragState) { (value, state, _) in
-                        state = value.translation
-                    }
-                    .onEnded { value in
-                        note.position.x += value.translation.width
-                        note.position.y += value.translation.height
-                    }
-            )
-            .simultaneousGesture(
-                MagnificationGesture()
-                    .updating($magnifyState) { (value, state, _) in
-                        state = value
-                    }
-                    .onEnded { value in
-                        note.size.width *= value
-                        note.size.height *= value
-                    }
-            )
-    }
-}
-struct BoardView_Previews: PreviewProvider {
-    @State static var stickers = [Sticker()] 
-    @State static var addstickers = Sticker() // Initial sticker data for previews
     
+    func formatTime(_ totalSeconds: Int) -> String {
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+    func addNewNote() {
+        withAnimation {
+            let screenWidth = UIScreen.main.bounds.width
+            let screenHeight = UIScreen.main.bounds.height
+            
+            let initialSize = CGSize(width: 300, height: 200)
+            let centerPositionX = screenWidth / 2 - initialSize.width / 2
+            let centerPositionY = screenHeight / 2 - initialSize.height / 2
+            
+//            let newNote = NoteModel(
+////                noteText: "New Note",
+////                noteColor: Color.random,
+//                textColor: .white,
+//                position: CGPoint(x: centerPositionX, y: centerPositionY),
+//                size: initialSize
+////            )
+//            notes.append(newNote)
+//            selectedNote = nil
+        }
+    }
+}
+
+struct BoardView_Previews: PreviewProvider {
     static var previews: some View {
-        BoardView(addStickere: addstickers, droppedStickers: stickers)
+        BoardView(inputImage: .constant(nil), addSticker: Sticker(imageName: "defaultImageName"))
     }
 }

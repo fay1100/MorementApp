@@ -7,26 +7,17 @@
 import SwiftUI
 
 
-struct Sticker: Identifiable, Hashable {
+struct Sticker: Identifiable {
     var id = UUID()
-    var imageName: String = "placeholder_image" // Default image name
-    var position: CGSize = .zero
-    var size: CGSize = CGSize(width: 100, height: 100)
-    var rotation: Angle = .zero
-    var isResizing: Bool = false
-
-    // Implement hash function if you need custom behavior
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-        // Add any other properties here if they contribute to the identity of the sticker
-    }
-
-    static func == (lhs: Sticker, rhs: Sticker) -> Bool {
-        lhs.id == rhs.id
-        // Compare other properties if they are part of the identity
-    }
+    var imageName: String
+    var position: CGPoint = .zero  // قيمة افتراضية للموقف
+    var size: CGSize = CGSize(width: 100, height: 100)  // قيمة افتراضية للحجم
+    var dragOffset: CGSize = .zero  // تستخدم لتتبع حركة الاستكر
 }
-struct NoteViewWithGesture: View {
+
+
+
+struct StickerViewWithGesture: View {
     @Binding var note: NoteModel
 
     var body: some View {
@@ -61,83 +52,75 @@ struct NoteViewWithGesture: View {
 }
 
 struct StickerBoard: View {
-    
-    @Binding var navigateToBoardView: Bool
-    @Binding var droppedStickers: [Sticker]
-    @State private var selectedSticker: Sticker?
+        @Binding var navigateToBoardView: Bool
+        @Binding var droppedStickers: [Sticker]
+        @Binding var inputImage: UIImage?
+        let stickers: [Sticker] = [
+            Sticker(imageName: "butterfly"),  // يجب أن يكون متوفراً في Assets.xcassets أو كأيقونة نظام
+            Sticker(imageName: "cake"),       // مثل الأول
+        ]
 
-    let stickers: [Sticker] = [
-        Sticker(imageName: "100", position: .zero),
-        Sticker(imageName: "butterfly", position: .zero),
-        // Add more stickers...
-    ]
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 32) {
-                    ForEach(stickers) { sticker in
-                        
-                        
-                        NavigationLink(destination: {
-                            BoardView(addStickere: sticker)
-                            
-                            
-                        }, label: {
-                            
-                                Image(sticker.imageName)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 100, height: 100)
-                                    .clipped()
-                                    .padding(.vertical, 10)
+        var body: some View {
+            NavigationStack {
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 32) {
+                        ForEach(stickers) { sticker in
+                            Button(action: {
+                                droppedStickers.append(sticker)
+                                navigateToBoardView = true
+                            }) {
+                                // تأكد من استخدام الصور المناسبة حسب النوع
+                                if UIImage(named: sticker.imageName) != nil {
+                                    Image(sticker.imageName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 100, height: 100)
+                                        .clipped()
+                                        .padding(.vertical, 10)
+                                } else {
+                                    Image(systemName: sticker.imageName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 100, height: 100)
+                                        .clipped()
+                                        .padding(.vertical, 10)
+                                }
+                            }
                         }
-                        
-                        )
-                            
-                       
-                        
-                        
                     }
                 }
-                
+                .navigationTitle("Stickers")
             }
-//            .navigationDestination(for: Sticker.self) { sticker in
-//                BoardView(droppedStickers: $droppedStickers)
-//                
-//              
-//                
-//                
-//            
-//            }
-            .onChange(of: selectedSticker) { newValue in
-                if newValue != nil {
-                    droppedStickers.append(newValue!)
-                }
-                
-            }
-            
         }
-        
-        
-        
-        
     }
-    
-  
-}
+    struct StickerBoard_Previews: PreviewProvider {
+        static var previews: some View {
+            let droppedStickers = [
+                Sticker(imageName: "star", position: CGPoint(x: 10, y: 10)),  // إضافة مثال للاستكر مع موقف معين
+                Sticker(imageName: "butterfly", position: CGPoint(x: 50, y: 50))  // مثال آخر
+            ]
 
-
-struct StickerBoard_Previews: PreviewProvider {
-    static var previews: some View {
-        // إنشاء بيانات مؤقتة للمعاينة
-        let droppedStickers = [
-            Sticker(imageName: "example1"),
-            Sticker(imageName: "example2")
-        ]
-        
-        // استخدام Binding.constant لتوفير ربط مؤقت
-        // تحديد النوع بشكل صريح لكل ربط
-        StickerBoard(navigateToBoardView: Binding<Bool>.constant(false), droppedStickers: Binding<[Sticker]>.constant(droppedStickers))
+            // توفير ربط مؤقت لـ inputImage والربط المباشر للمتغيرات الأخرى
+            StickerBoard(
+                navigateToBoardView: .constant(false),
+                droppedStickers: .constant(droppedStickers),
+                inputImage: .constant(nil)
+            )
+        }
     }
-}
+
+//struct StickerBoard_Previews: PreviewProvider {
+//    static var previews: some View {
+//        let droppedStickers = [
+//            Sticker(imageName: "star", position: CGPoint(x: 10, y: 10)),  // إضافة مثال للاستكر مع موقف معين
+//            Sticker(imageName: "butterfly", position: CGPoint(x: 50, y: 50))  // مثال آخر
+//        ]
+//        
+//        // توفير ربط مؤقت لـ inputImage والربط المباشر للمتغيرات الأخرى
+//        StickerBoard(
+//            navigateToBoardView: .constant(false),
+//            droppedStickers: .constant(droppedStickers),
+//            inputImage: .constant(nil)
+//        )
+//    }
+//}
