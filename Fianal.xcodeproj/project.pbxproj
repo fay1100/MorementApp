@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B15CA4C2BEECB0F00F7A6CE /* NoteToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */; };
 		0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */; };
 		5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */; };
 		5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */; };
@@ -18,10 +17,15 @@
 		5A62D7DB2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */; };
 		5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */; };
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
-		5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701CFF2BD7B2FC00FD5800 /* userModel.swift */; };
-		5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A701D032BD7C7E500FD5800 /* ToolbarView.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
-		7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7728B55C2BE2A34E0041239B /* stickersView.swift */; };
+		5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */; };
+		5ACBB2522BF4094F002EEF42 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */; };
+		5ACBB2542BF40969002EEF42 /* MembersListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2532BF40969002EEF42 /* MembersListView.swift */; };
+		5ACBB2562BF40995002EEF42 /* BoardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2552BF40995002EEF42 /* BoardManager.swift */; };
+		5ACBB2582BF409A9002EEF42 /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2572BF409A9002EEF42 /* ToolbarView.swift */; };
+		5ACBB25A2BF409BB002EEF42 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2592BF409BB002EEF42 /* UserProfile.swift */; };
+		5ACBB25C2BF409EF002EEF42 /* StickerGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */; };
+		5ACBB25E2BF409F9002EEF42 /* StickyNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */; };
 		E531664E2BD39DF300D168A4 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664D2BD39DF300D168A4 /* MainView.swift */; };
 		E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664F2BD3A74400D168A4 /* CreateBoardView.swift */; };
 		E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53166512BE258A500D168A4 /* OnBoardingView.swift */; };
@@ -47,7 +51,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteToolbar.swift; sourceTree = "<group>"; };
 		0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
 		5A62D7BA2BC37A8600BBCE5C /* Fianal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fianal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalApp.swift; sourceTree = "<group>"; };
@@ -62,10 +65,15 @@
 		5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DetailsView.swift; path = ../DetailsView.swift; sourceTree = "<group>"; };
 		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
-		5A701CFF2BD7B2FC00FD5800 /* userModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = userModel.swift; sourceTree = "<group>"; };
-		5A701D032BD7C7E500FD5800 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
-		7728B55C2BE2A34E0041239B /* stickersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stickersView.swift; sourceTree = "<group>"; };
+		5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
+		5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		5ACBB2532BF40969002EEF42 /* MembersListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MembersListView.swift; sourceTree = "<group>"; };
+		5ACBB2552BF40995002EEF42 /* BoardManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardManager.swift; sourceTree = "<group>"; };
+		5ACBB2572BF409A9002EEF42 /* ToolbarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
+		5ACBB2592BF409BB002EEF42 /* UserProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickerGridView.swift; sourceTree = "<group>"; };
+		5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickyNote.swift; sourceTree = "<group>"; };
 		E531664D2BD39DF300D168A4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		E531664F2BD3A74400D168A4 /* CreateBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateBoardView.swift; sourceTree = "<group>"; };
 		E53166512BE258A500D168A4 /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
@@ -101,9 +109,8 @@
 		5A62D7B12BC37A8600BBCE5C = {
 			isa = PBXGroup;
 			children = (
-				7728B55C2BE2A34E0041239B /* stickersView.swift */,
-				5A701D032BD7C7E500FD5800 /* ToolbarView.swift */,
-				5A701CFF2BD7B2FC00FD5800 /* userModel.swift */,
+				5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */,
+				5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */,
 				5A62D7BC2BC37A8600BBCE5C /* Fianal */,
 				5A62D7CD2BC37A8700BBCE5C /* FianalTests */,
 				5A62D7D72BC37A8700BBCE5C /* FianalUITests */,
@@ -125,18 +132,23 @@
 			isa = PBXGroup;
 			children = (
 				5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */,
+				5ACBB2552BF40995002EEF42 /* BoardManager.swift */,
+				5ACBB2592BF409BB002EEF42 /* UserProfile.swift */,
 				5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */,
 				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
 				5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */,
 				E53166512BE258A500D168A4 /* OnBoardingView.swift */,
 				E53166552BEAD50C00D168A4 /* OnboadingData.swift */,
 				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
-				0B15CA4B2BEECB0F00F7A6CE /* NoteToolbar.swift */,
 				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
 				E532E3E92BEBE70000155F04 /* JoinView.swift */,
 				E531664D2BD39DF300D168A4 /* MainView.swift */,
 				E531664F2BD3A74400D168A4 /* CreateBoardView.swift */,
 				5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */,
+				5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */,
+				5ACBB2532BF40969002EEF42 /* MembersListView.swift */,
+				5ACBB2572BF409A9002EEF42 /* ToolbarView.swift */,
+				5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */,
 				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
 				5A62D7C32BC37A8700BBCE5C /* Preview Content */,
 			);
@@ -298,20 +310,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5A701D042BD7C7E500FD5800 /* ToolbarView.swift in Sources */,
+				5ACBB2562BF40995002EEF42 /* BoardManager.swift in Sources */,
 				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,
-				0B15CA4C2BEECB0F00F7A6CE /* NoteToolbar.swift in Sources */,
-				7728B55D2BE2A34E0041239B /* stickersView.swift in Sources */,
+				5ACBB2542BF40969002EEF42 /* MembersListView.swift in Sources */,
+				5ACBB2522BF4094F002EEF42 /* ImagePicker.swift in Sources */,
 				E53166562BEAD50C00D168A4 /* OnboadingData.swift in Sources */,
 				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
+				5ACBB25A2BF409BB002EEF42 /* UserProfile.swift in Sources */,
+				5ACBB25C2BF409EF002EEF42 /* StickerGridView.swift in Sources */,
 				5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */,
 				5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */,
+				5ACBB25E2BF409F9002EEF42 /* StickyNote.swift in Sources */,
+				5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */,
 				5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */,
 				E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */,
 				E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */,
+				5ACBB2582BF409A9002EEF42 /* ToolbarView.swift in Sources */,
 				E532E3EA2BEBE70000155F04 /* JoinView.swift in Sources */,
-				5A701D002BD7B2FC00FD5800 /* userModel.swift in Sources */,
 				0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

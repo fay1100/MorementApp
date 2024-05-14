@@ -1,66 +1,116 @@
-//
-//  OnBoardingView.swift
-//  Fianal
-//
-//  Created by Deemh Albaqami on 22/10/1445 AH.
-//
-
 import SwiftUI
 
 struct OnboardingView: View {
     var onboardingData: [OnboardingItem] = [
         OnboardingItem(imageName: "OB1", title: "Focus on your moments", description: "With your family and friends, and keep those memories here."),
-        OnboardingItem(imageName: "OB2", title: "Save it in one place", description: "Anytime and anywhere, you and those who love to share can look back to it with MoreMent."),
-        OnboardingItem(imageName: "OB3", title: "Enter your name", description: "Choose a Good one, you can’t change it!")
+        OnboardingItem(imageName: "OB2", title: "Save it in one place", description: "Anytime and anywhere, you and those who love to share can look back to it with MoreMent.")
     ]
+
+    let lastOnboardingItem = OnboardingItem(imageName: "OB3", title: "Enter your name", description: "Choose a Good one, you can’t change it!")
 
     @State private var currentPage = 0
     @State private var isOnboardingComplete = false
     @State private var userName: String = ""
+    @State private var userHasProfile = false
 
     var body: some View {
         NavigationView {
             VStack {
                 TabView(selection: $currentPage) {
                     ForEach(onboardingData.indices, id: \.self) { index in
-                        OnboardingSlideView(item: onboardingData[index], isLastSlide: index == onboardingData.indices.last, userName: $userName)
+                        OnboardingSlideView(item: onboardingData[index], isLastSlide: false, userName: $userName)
                             .tag(index)
+                    }
+                    if !userHasProfile {
+                        OnboardingSlideView(item: lastOnboardingItem, isLastSlide: true, userName: $userName)
+                            .tag(onboardingData.count)
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
                 .padding()
-
-                PageControl(numberOfPages: onboardingData.count, currentPage: $currentPage)
+                
+                PageControl(numberOfPages: userHasProfile ? onboardingData.count : onboardingData.count + 1, currentPage: $currentPage)
                     .padding()
-
+                
                 Button(action: {
-                    if currentPage < onboardingData.count - 1 {
+                    if currentPage < (userHasProfile ? onboardingData.count - 1 : onboardingData.count) {
                         currentPage += 1
                     } else {
-                        isOnboardingComplete = true
+                        if userHasProfile {
+                            isOnboardingComplete = true
+                        } else {
+                            createUserProfileAndCompleteOnboarding()
+                        }
                     }
                 }) {
-                    Text(currentPage == onboardingData.count - 1 ? "Let's Start" : "Next")
+                    Text(currentPage == (userHasProfile ? onboardingData.count - 1 : onboardingData.count) ? "Let's Start" : "Next")
                         .frame(width: 358, height: 46)
                         .background(Color("MainColor"))
                         .foregroundColor(.black)
                         .cornerRadius(8)
                 }
-                .disabled(currentPage == onboardingData.count - 1 && userName.isEmpty)
-                .opacity(currentPage == onboardingData.count - 1 && userName.isEmpty ? 0.5 : 1)
                 .padding()
-
+                
                 Spacer()
             }
-            .navigationBarItems(trailing: currentPage == onboardingData.indices.last ? nil : Button("Skip") {
-                currentPage = onboardingData.indices.last ?? currentPage
-            }
-            .foregroundColor(.gray))
+            .navigationBarItems(trailing: Button("Skip") {
+                UserDefaults.standard.set(true, forKey: "OnboardingCompleted")
+                isOnboardingComplete = true
+            }.foregroundColor(.gray))
+
+
+
             .fullScreenCover(isPresented: $isOnboardingComplete, content: {
-                MainView().environmentObject(BoardViewModel())
+                MainView()
             })
+            .onAppear {
+                checkUserProfileExistence()
+            }
+       }
+    }
+
+    private func checkUserProfileExistence() {
+        let onboardingCompleted = UserDefaults.standard.bool(forKey: "OnboardingCompleted")
+        if onboardingCompleted {
+            self.isOnboardingComplete = true
+            return
+        }
+
+        UserProfileManager.shared.fetchUserProfile { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let fetchedNickname):
+                    if let nickname = fetchedNickname, !nickname.isEmpty {
+                        self.userName = nickname
+                        self.userHasProfile = true
+                    } else {
+                        self.userHasProfile = false
+                    }
+                case .failure(_):
+                    self.userHasProfile = false
+                }
+            }
         }
     }
+
+
+    private func createUserProfileAndCompleteOnboarding() {
+        UserProfileManager.shared.createUserProfile(nickname: userName) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success():
+                    UserDefaults.standard.set(true, forKey: "OnboardingCompleted")
+                    self.isOnboardingComplete = true
+                case .failure(let error):
+                    print("Error creating user profile: \(error.localizedDescription)")
+                }
+            }
+        }
+    
+    }
+
+
+
 }
 
 struct OnboardingSlideView: View {
@@ -98,7 +148,7 @@ struct PageControl: View {
             ForEach(0..<numberOfPages, id: \.self) { index in
                 Circle()
                     .frame(width: 8, height: 8)
-                    .foregroundColor(currentPage == index ? Color("MainColor") : .gray)  
+                    .foregroundColor(currentPage == index ? Color("MainColor") : .gray)
                     .overlay(Circle().stroke(Color.gray, lineWidth: 0.5))
             }
         }
@@ -110,83 +160,3 @@ struct OnboardingView_Previews: PreviewProvider {
         OnboardingView()
     }
 }
-
-
-
-
-
-//import SwiftUI
-//
-//struct OnBoardingView: View {
-//    var body: some View {
-//        NavigationView {
-//            VStack {
-//                NavigationLink(destination: MainView()) {
-//                    Text("Skip")
-//                } .navigationBarBackButtonHidden(true)
-//                    .padding()
-//                    .foregroundColor(.gray)
-//                    .cornerRadius(10)
-//                    .padding()
-//                    .offset(x:140,y:-30)
-//                Image("OB1")
-//                    .resizable()
-//                Text("Focus on your moments")
-//                    .font(.title)
-//                    .fontWeight(.bold)
-//                    .padding(.top)
-//                Text("With your family and friends, and keep those memories here.")
-//                    .padding(.all)
-//
-//                NavigationLink(destination: OnBoarding2()) {
-//                    Text("Next")
-//                }
-//
-//                .foregroundColor(.white)
-//                .frame(width: 358 , height: 45)
-//                .background(Color.yellow)
-//                .cornerRadius(10)
-//
-//            }
-//
-//        }
-//    }
-//}
-//struct OnBoarding2: View {
-//        var body: some View {
-//            NavigationView {
-//                VStack {
-//                    NavigationLink(destination: MainView()) {
-//                        Text("Skip")
-//                    }.navigationBarBackButtonHidden(true)
-//                    .padding()
-//                    .foregroundColor(.gray)
-//                    .cornerRadius(10)
-//                    .padding()
-//                    .offset(x:140,y:-30)
-//                    Image("OB2")
-//                        .resizable()
-//                    Text("Save it in one place")
-//                        .font(.title)
-//                        .fontWeight(.bold)
-//                        .padding(.top)
-//                    Text("Anytime and anywhere, you and those who love to share can look back to it with AppName. ")
-//                        .padding(.all)
-//
-//                    NavigationLink(destination: MainView()) {
-//                        Text("Let's start")
-//                    }.navigationBarBackButtonHidden(true)
-//                            .foregroundColor(.white)
-//                            .frame(width: 358 , height: 45)
-//                            .background(Color.yellow)
-//                            .cornerRadius(10)
-//                            .padding()
-//
-//                }
-//            }
-//        }
-//    }
-//
-//#Preview {
-//    OnBoardingView()
-//}

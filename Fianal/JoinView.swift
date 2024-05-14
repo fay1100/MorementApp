@@ -1,70 +1,111 @@
-//
-//  JoinView.swift
-//  Fianal
-//
-//  Created by Deemh Albaqami on 29/10/1445 AH.
-//
-
 import SwiftUI
+import CloudKit
 
-struct JoinView: View {
-    @Binding var showingPopover: Bool
-    @State private var codeNum = ""
-    @State private var showingShareSheet = false
+struct JoinBoardView: View {
+    @Binding var nickname: String
+    @State private var boardID: String = ""
+    @State private var boardTitle: String = ""
+    @State private var isJoining: Bool = false
+    @State private var joinError: String?
+    @State private var navigateToBoard: Bool = false
+    @State private var ownerNickname: String = ""
+    @Binding var isShowingPopover: Bool
+
+    @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
-        VStack(alignment: .center) {
-            Text("Enter the board code")
-                .padding(.top)
             
-            Divider()
-                .padding(.horizontal)
-            
-            TextField("Enter the board code", text: $codeNum)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            
-            HStack {
-                Button(action: {
-                    self.showingPopover = false
-                }) {
-                    VStack {
-                        Text("Cancel")
-                            .foregroundColor(.black)
+            VStack(alignment: .center) {
+                Text("Enter the board code")
+                    .padding(.bottom)
+                
+                Divider()
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                
+                TextField("Enter Board ID", text: $boardID)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                    .padding(.top, -20)
+                
+                if let joinError = joinError {
+                    Text(joinError).foregroundColor(.red)
+                        .font(.system(size: 12))
+                }
+                if isJoining {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(1.5)
+                        .zIndex(1)
+                }
+                
+                HStack {
+                    Button("Cancel") {
+                        isShowingPopover = false
                     }
-                    .frame(width: 115, height: 50)
                     .background(Color.white)
+                    .foregroundColor(.black)
+                    .frame(width: 115, height: 50)
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color("MainColor"), lineWidth: 1)
                     )
-                }
-                Button(action: {
-                    self.showingShareSheet = true
-                }) {
-                    VStack {
-                        Text("Join")
-                            .foregroundColor(.black)
+                    
+                    Button("Join Board") {
+                        joinBoard()
                     }
                     .frame(width: 115, height: 50)
                     .background(Color("MainColor"))
                     .cornerRadius(8)
+                    .disabled(boardID.isEmpty || isJoining)
+                    .foregroundColor(.white)
+                    .fullScreenCover(isPresented: $navigateToBoard) {
+                                 BoardView(boardID: boardID, ownerNickname: ownerNickname, title: boardTitle)
+                             }
+                    
                 }
+                .padding(.top, 30)
                 
-
-            } .padding(.bottom)
-            
+                // Ensures navigation link is properly set to activate
+              
+            }
+            .frame(width: 290, height: 280)
+            .background(Color.white)
+            .cornerRadius(16)
+            .shadow(radius: 20)
+        
+        
+    }
+    private func joinBoard() {
+        let cleanBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
+        isJoining = true
+        BoardManager.shared.fetchBoardByBoardID(cleanBoardID) { [self] result in
+            DispatchQueue.main.async {
+                isJoining = false
+                switch result {
+                case .success(let boardRecord):
+                    boardTitle = boardRecord["title"] as? String ?? "Unknown"
+                    ownerNickname = (boardRecord["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
+                    proceedToAddMember(boardRecord: boardRecord)
+                case .failure(let error):
+                    joinError = "Failed to join the board: \(error.localizedDescription)"
+                }
+            }
         }
-        .frame(width: 270, height: 240)
-        .background(Color.white)
-        .cornerRadius(8)
-        .shadow(radius: 20)
+    }
+
+    private func proceedToAddMember(boardRecord: CKRecord) {
+        BoardManager.shared.addMemberToBoard(memberNickname: nickname, boardID: boardRecord.recordID.recordName) { [self] addMemberResult in
+            DispatchQueue.main.async {
+                switch addMemberResult {
+                case .success():
+                    navigateToBoard = true
+                case .failure(let error):
+                    joinError = "Failed to add member to the board: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 }
 
-struct JoinView_Previews: PreviewProvider {
-    static var previews: some View {
-        JoinView(showingPopover: .constant(true))
-    }
-}

@@ -1,53 +1,90 @@
-//
-//  MainView.swift
-//  Fianal
-//
-//  Created by Deemh Albaqami on 11/10/1445 AH.
-//
-//
 import SwiftUI
+import CloudKit
 
-struct Board: Identifiable, Hashable {
-    let id = UUID()
-    var name: String
-    var image: String
-}
-
-class BoardViewModel: ObservableObject {
-    @Published var boards: [Board] = []
-
-    func createBoard(name: String, image: String) {
-        let newBoard = Board(name: name, image: image)
-        boards.insert(newBoard, at: 0)
-    }
-}
 struct MainView: View {
-        @EnvironmentObject var viewModel: BoardViewModel
-        @State private var showingDetailsView = false
-        @State private var editingBoardID: UUID?
-        @State private var temporaryName: String = ""
-        @State private var selectedBoard: Board?
-        var body: some View {
-            NavigationStack {
-                VStack {
-                    if viewModel.boards.isEmpty {
-                        emptyStateView
-                    } else {
-                        boardsGridView
-                    }
-                }
-                .navigationTitle("Boards")
-                .navigationBarItems(trailing: navigationBarItems)
-                .overlay(
-                    Group {
-                        if showingDetailsView {
-                            JoinView(showingPopover: $showingDetailsView)
+    @State private var nickname: String = ""
+    @State private var isLoading = true  // Initially true to show loading on view appear
+    @State private var navigatingToBoardCreation = false
+    @State private var showingJoinBoard = false  // Updated state for showing the JoinBoardView
+    @State private var errorMessage: String?
+    @State private var boards: [(record: CKRecord, image: UIImage?)] = []
+    @State private var showingDeleteAlert = false
+
+    var body: some View {
+        NavigationStack {
+              ZStack {
+                  // Check if we are still loading data
+                     if isLoading {
+                         ProgressView("Loading...").scaleEffect(1.5, anchor: .center)
+                     } else if boards.isEmpty {
+                         // If not loading and boards are empty, show empty state view
+                         emptyStateView
+                     } else {
+                         // If we have boards, show the boards list
+                         boardsList
+                     }
+                 }
+                 .onAppear {
+                     fetchBoards()  // Fetching boards on view appear
+                 }
+              
+              .navigationBarItems(
+                  leading: AnyView(Text("Welcome, \(nickname)!").bold()),
+                  trailing: HStack {
+                            Button(action: {
+                                showingJoinBoard = true
+                            }) {
+                                Image(systemName: "person.2")
+                                    .foregroundColor(Color("MainColor")) // لون الأيقونة
+
+
+                            }
+                            Button(action: {
+                                navigatingToBoardCreation = true
+                            }) {
+                                Image(systemName: "plus.rectangle")
+                                    .foregroundColor(Color("MainColor"))
+                            }
                         }
-                    }, alignment: .center
+                    
+              )
+              .navigationBarBackButtonHidden(true)
+              .navigationTitle("Boards")
+              
+              .onAppear {
+                fetchUserProfile()
+                fetchBoards()
+            }
+            
+            
+            
+            .fullScreenCover(isPresented: $navigatingToBoardCreation) {
+                            BoardCreationView()
+                                .transition(.move(edge: .trailing))
+                        }
+            .overlay(
+                         Group {
+                             if showingJoinBoard {
+                                 JoinBoardView(nickname: $nickname, isShowingPopover: $showingJoinBoard)
+                                     .background(Color.white)
+                                     .cornerRadius(20)
+                                     .shadow(radius: 10)
+                                     .transition(.scale)
+                             }
+                         }, alignment: .center
+                     )
+            .alert(isPresented: $showingDeleteAlert) {
+                Alert(
+                    title: Text("Confirm Deletion"),
+                    message: Text("Are you sure you want to delete your profile?"),
+                    primaryButton: .destructive(Text("Delete")) {
+                        deleteUserProfile()
+                    },
+                    secondaryButton: .cancel()
                 )
             }
         }
-
+    }
     private var emptyStateView: some View {
         VStack(alignment: .center) {
             Image("Empty")
@@ -57,672 +94,190 @@ struct MainView: View {
         }
         .padding()
     }
-    
-    private var boardsGridView: some View {
+
+
+
+    var boardsList: some View {
         ScrollView {
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(viewModel.boards) { board in
-                    boardView(for: board)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                ForEach(boards, id: \.record.recordID) { board in
+                    boardCard(for: board)
+                        .frame(minWidth: 0, maxWidth: .infinity)
                 }
             }
-            .padding()
+        }
+        .refreshable {
+            fetchBoards()
         }
     }
-    
-    private func boardView(for board: Board) -> some View {
-        VStack(alignment: .leading) {
-            Image(board.image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 171, height: 130)
-                .clipped()
+
+
+    func boardCard(for board: (record: CKRecord, image: UIImage?)) -> some View {
+        NavigationLink(destination: BoardView(boardID: board.record["boardID"] as? String ?? "Unknown",
+                                               ownerNickname: extractOwnerNickname(from: board.record),
+                                               title: board.record["title"] as? String ?? "Unnamed Board"))
+        {
             
-            HStack {
-                if editingBoardID == board.id {
-                    TextField("Enter new name", text: $temporaryName, onCommit: {
-                        finishEditing(board: board)
-                    })
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding([.leading, .vertical], 8)
+            VStack {
+                if let image = board.image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .clipped()
+                        .frame(width: 170, height: 150)
+                        .clipShape(RoundedCorner(radius: 10, corners: [.topLeft, .topRight]))
+                        .background(Color.white)
                 } else {
-                    Text(board.name)
-                        .padding([.leading, .vertical], 8)
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 190, height: 150)
+                        .cornerRadius(10)
+                        .foregroundColor(.gray)
+                        .background(Color.white)
                 }
-                Spacer()
-                boardActionsMenu(board: board)
-                
-            }.padding()
-                .background(Color.grayLight)
-                .frame(minWidth: 0, maxWidth: .infinity)
-        }
-        .cornerRadius(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.grayLight, lineWidth: 1)
-        )
-    }
-    
-    private func boardActionsMenu(board: Board) -> some View {
-        Menu {
-            Button("Rename") {
-                temporaryName = board.name
-                editingBoardID = board.id
+                Text(board.record["title"] as? String ?? "Unnamed Board")
+                    .font(.system(size: 19))
+                    .foregroundColor(.black)
+                Text(dateToString(board.record.creationDate ?? Date()))
+                    .font(.system(size: 14))
+                    .foregroundColor(.black)
+                    .frame(height: 20)
             }
-            Button("Share") {
-                // Placeholder for sharing functionality
-            }
-            Button("Delete") {
-                selectedBoard = board
-                deleteBoard()
-            }
-        } label: {
-            Image(systemName: "ellipsis")
+            .background(Color("GrayLight"))
+            .cornerRadius(10)
+            .frame(width: 170, height: 218)
         }
-    }
-    
-    private func finishEditing(board: Board) {
-        if let index = viewModel.boards.firstIndex(where: { $0.id == board.id }) {
-            viewModel.boards[index].name = temporaryName
-        }
-        editingBoardID = nil
-    }
-    
-    private func deleteBoard() {
-        if let board = selectedBoard, let index = viewModel.boards.firstIndex(where: { $0.id == board.id }) {
-            viewModel.boards.remove(at: index)
-        }
-    }
-    
-    private var navigationBarItems: some View {
-        HStack {
+        .contextMenu {
             Button(action: {
-                showingDetailsView = true  // This will display the JoinView as an overlay
+                deleteBoard(boardID: board.record["boardID"] as? String ?? "")
             }) {
-                Image(systemName: "person.2")
+                Label("Delete Board", systemImage: "trash")
             }
-            NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-                Image(systemName: "plus.rectangle")
+        }
+    }
+
+    var deleteProfileButton: some View {
+        Button("Delete Profile") {
+            showingDeleteAlert = true
+        }
+        .padding()
+        .background(Color.red)
+        .foregroundColor(.white)
+        .cornerRadius(10)
+        .padding()
+    }
+
+    
+    func fetchUserProfile() {
+        isLoading = true
+        UserProfileManager.shared.fetchUserProfile { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let fetchedNickname):
+                    if let nickname = fetchedNickname {
+                        self.nickname = nickname // Updating the nickname state
+                    } else {
+                        errorMessage = "No profile exists, please create one."
+                    }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
             }
         }
     }
     
-}
+    func deleteBoard(boardID: String) {
+            isLoading = true
+            BoardManager.shared.handleBoardDeletion(boardID: boardID) { result in
+                DispatchQueue.main.async {
+                    isLoading = false
+                    switch result {
+                    case .success():
+                        self.boards.removeAll { $0.record["boardID"] as? String ?? "" == boardID }
+                        print("Board deleted successfully.")
+                    case .failure(let error):
+                        self.errorMessage = "Failed to delete board: \(error.localizedDescription)"
+                    }
+                }
+            }
+        }
     
-    
-struct MainView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainView().environmentObject(BoardViewModel())
+    func deleteUserProfile() {
+        UserProfileManager.shared.deleteUserProfile(nickname: nickname) { result in
+            switch result {
+            case .success():
+                print("Profile deleted successfully.")
+                nickname = ""
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+                print("Error deleting profile: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func dateToString(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+
+    private func extractOwnerNickname(from record: CKRecord) -> String {
+        (record["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
+    }
+
+    func fetchBoards() {
+        isLoading = true
+        var fetchedBoards: [(record: CKRecord, image: UIImage?)] = []
+        
+        let group = DispatchGroup()
+        
+        group.enter()
+        BoardManager.shared.fetchBoards { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let boardData):
+                    fetchedBoards.append(contentsOf: boardData)
+                case .failure(let error):
+                    errorMessage = "Error fetching owned boards: \(error.localizedDescription)"
+                }
+                group.leave()
+            }
+        }
+        
+        group.enter()
+        BoardManager.shared.fetchBoardsForCurrentUser { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let boardData):
+                    fetchedBoards.append(contentsOf: boardData)
+                case .failure(let error):
+                    errorMessage = "Error fetching boards as member: \(error.localizedDescription)"
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: DispatchQueue.main) {
+            self.boards = fetchedBoards.sorted { $0.record.creationDate ?? Date.distantPast > $1.record.creationDate ?? Date.distantPast }
+            self.isLoading = false  // Ensure this is only set after all fetches are complete
+        }
     }
 }
 
-    
-    // نسخ قديمه
-    //import SwiftUI
-    //
-    //struct Board: Identifiable, Hashable {
-    //    let id = UUID()
-    //    var name: String
-    //    var image: String
-    //}
-    //class BoardViewModel: ObservableObject {
-    //    @Published var boards: [Board] = []
-    //
-    //    func createBoard(name: String, image: String) {
-    //        let newBoard = Board(name: name, image: image)
-    //        boards.insert(newBoard, at: 0)
-    //    }
-    //}
-    //
-    //struct MainView: View {
-    //    @EnvironmentObject var viewModel: BoardViewModel
-    //    @State private var selectedBoard: Board?
-    //
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                if viewModel.boards.isEmpty {
-    //                    emptyStateView
-    //                } else {
-    //                    boardsGridView
-    //                }
-    //            }
-    //            .navigationBarTitle("Boards")
-    //            .navigationBarItems(trailing: navigationBarItems)
-    //        }
-    //    }
-    //
-    //    private var emptyStateView: some View {
-    //        VStack(alignment: .center) {
-    //            Image("Empty")
-    //            Text("Start designing your boards by creating a new board")
-    //                .foregroundColor(Color("GrayMid"))
-    //                .multilineTextAlignment(.center)
-    //        }
-    //        .padding()
-    //    }
-    //
-    //    private var boardsGridView: some View {
-    //        ScrollView {
-    //            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-    //                ForEach(viewModel.boards) { board in
-    //                    boardView(for: board)
-    //                }
-    //            }
-    //            .padding()
-    //        }
-    //    }
-    //
-    //    private func boardView(for board: Board) -> some View {
-    //        VStack(alignment: .leading) {
-    //            Image(board.image)
-    //                .resizable()
-    //                .aspectRatio(contentMode: .fill)
-    //                .frame(width: 171, height: 103)
-    //                .clipped()
-    //
-    //            HStack {
-    //                Text(board.name)
-    //                    .padding([.leading, .vertical], 8)
-    //                Spacer()
-    //                boardActionsMenu(board: board)
-    //
-    //            }.padding()
-    //            .background(Color.grayLight)
-    //            .frame(minWidth: 0, maxWidth: .infinity)
-    //        }
-    //        .cornerRadius(8)
-    //        .overlay(
-    //            RoundedRectangle(cornerRadius: 8)
-    //                .stroke(Color.grayLight, lineWidth: 1)
-    //        )
-    //    }
-    //
-    //
-    //    private func boardActionsMenu(board: Board) -> some View {
-    //        Menu {
-    //            Button("Rename") {
-    //                selectedBoard = board
-    //                renameBoard()
-    //            }
-    //            Button("Share") {
-    ////
-    //            }
-    //            Button("Delete") {
-    //                selectedBoard = board
-    //                deleteBoard()
-    //            }
-    //        } label: {
-    //            Image(systemName: "ellipsis")
-    //        }
-    //    }
-    //
-    //    private func renameBoard() {
-    //
-    //    }
-    //
-    //
-    //    private func deleteBoard() {
-    //        // Code to delete `selectedBoard` from your boards array
-    //        if let board = selectedBoard, let index = viewModel.boards.firstIndex(where: { $0.id == board.id }) {
-    //            viewModel.boards.remove(at: index)
-    //        }
-    //    }
-    //
-    //
-    //
-    //    private var navigationBarItems: some View {
-    //        HStack {
-    //            Button(action: {
-    //            }) {
-    //                Image(systemName: "plus.magnifyingglass")
-    //            }
-    //            NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-    //                Image(systemName: "rectangle.badge.plus")
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //struct MainView_Previews: PreviewProvider {
-    //    static var previews: some View {
-    //        MainView().environmentObject(BoardViewModel())
-    //    }
-    //}
-    
-    //import SwiftUI
-    //
-    //struct Board: Identifiable, Hashable {
-    //    let id = UUID()
-    //    var name: String
-    //    var image: String
-    //}
-    //
-    //class BoardViewModel: ObservableObject {
-    //    @Published var boards: [Board] = []
-    //
-    //    func createBoard(name: String, image: String) {
-    //        let newBoard = Board(name: name, image: image)
-    //        boards.insert(newBoard, at: 0)  // Insert at the beginning to simulate a stack
-    //    }
-    //}
-    //
-    //struct MainView: View {
-    //    @EnvironmentObject var viewModel: BoardViewModel
-    //
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                if viewModel.boards.isEmpty {
-    //                    emptyStateView
-    //                } else {
-    //                    boardsGridView
-    //                }
-    //            }
-    //            .navigationBarTitle("Boards")
-    //            .navigationBarItems(trailing: navigationBarItems)
-    //        }
-    //    }
-    //
-    //    private var emptyStateView: some View {
-    //        VStack(alignment: .center) {
-    //            Image("Empty")
-    //            Text("Start designing your boards by creating a new board")
-    //                .foregroundColor(Color("GrayMid"))
-    //                .multilineTextAlignment(.center)
-    //        }
-    //        .padding()
-    //    }
-    //
-    //    private var boardsGridView: some View {
-    //        ScrollView {
-    //            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-    //                ForEach(viewModel.boards.reversed()) { board in
-    //                    boardView(for: board)
-    //                }
-    //            }
-    //            .padding()
-    //        }
-    //    }
-    //
-    //    private func boardView(for board: Board) -> some View {
-    //        VStack {
-    //            Image(board.image)
-    //                .resizable()
-    //                .aspectRatio(contentMode: .fill)
-    //                .frame(width: 171, height: 103)
-    //                .cornerRadius(8)
-    //            HStack {
-    //                Text(board.name)
-    //                boardActionsMenu
-    //            }
-    //        }
-    //    }
-    //
-    //    private var boardActionsMenu: some View {
-    //        Menu {
-    //            Button("Rename") {
-    //                // Implement rename functionality
-    //            }
-    //            Button("Share") {
-    //                // Implement share functionality
-    //            }
-    //            Button("Delete") {
-    //                // Implement delete functionality
-    //            }
-    //        } label: {
-    //            Image(systemName: "ellipsis.circle")
-    //        }
-    //    }
-    //
-    //    private var navigationBarItems: some View {
-    //        HStack {
-    //            Button(action: {
-    //                // Implement add functionality
-    //            }) {
-    //                Image(systemName: "plus.magnifyingglass")
-    //            }
-    //            NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-    //                Image(systemName: "rectangle.badge.plus")
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //struct MainView_Previews: PreviewProvider {
-    //    static var previews: some View {
-    //        MainView().environmentObject(BoardViewModel())
-    //    }
-    //}
-    /*
-     
-     import SwiftUI
-     
-     struct Board: Identifiable, Hashable {
-     let id = UUID()
-     var name: String
-     var image: String
-     }
-     
-     
-     
-     class BoardViewModel: ObservableObject {
-     @Published var boards: [Board] = []
-     
-     func createBoard(name: String, image: String) {
-     let newBoard = Board(name: name, image: image)
-     boards.insert(newBoard, at: 0)
-     }
-     }
-     
-     
-     struct MainView: View {
-     @EnvironmentObject var viewModel: BoardViewModel
-     
-     var body: some View {
-     NavigationStack {
-     VStack {
-     if viewModel.boards.isEmpty {
-     // Display a message when no boards exist
-     VStack(alignment: .center) {
-     Image("Empty")
-     Text("Start designing your boards by creating a new board")
-     .foregroundColor(Color("GrayMid"))
-     .multilineTextAlignment(.center)
-     } .padding()
-     }
-     
-     // Grid view to display boards
-     LazyHGrid(rows: Array(repeating: GridItem(.flexible(minimum: 110, maximum: 190)), count: 2), spacing: 16) {
-     ForEach(viewModel.boards) { board in
-     VStack {
-     Image(board.image)
-     .resizable()
-     .aspectRatio(contentMode: .fill)
-     .frame(width: 171, height: 103)
-     .cornerRadius(8)
-     HStack{
-     Text(board.name)
-     Image(systemName:"pencil")
-     Menu {
-     Button("Rename") {
-     
-     }
-     Button("Share") {
-     }
-     Button("Delete") {
-     }
-     }
-     }
-     }
-     }
-     }
-     .navigationBarTitle("Board")
-     .navigationBarItems(trailing: HStack {
-     Button(action: {}) {
-     Image(systemName: "plus.magnifyingglass")
-     }
-     NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-     Image(systemName: "rectangle.badge.plus")
-     }
-     })
-     }
-     }
-     }
-     struct MainView_Previews: PreviewProvider {
-     static var previews: some View {
-     MainView().environmentObject(BoardViewModel())
-     }
-     }
-     */
-    
-    
-    //struct MainView: View {
-    //    @EnvironmentObject var viewModel: BoardViewModel
-    //
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                if viewModel.boards.isEmpty {
-    //                    VStack(alignment: .center) {
-    //                        Image("Empty")
-    //                        Text("Start designing your boards by creating a new board")
-    //                            .foregroundColor(Color("GrayMid"))
-    //                            .multilineTextAlignment(.center)
-    //                    } .padding()
-    //                }
-    //
-    //                LazyHGrid(rows: Array(repeating: GridItem(.flexible(minimum: 110, maximum: 190)), count: 2), spacing: 16) {
-    //                    ForEach(viewModel.boards) { board in
-    //                        VStack {
-    //                            Image(board.image)
-    //                                .resizable()
-    //                                .aspectRatio(contentMode: .fill)
-    //                                .frame(width: 171, height: 103)
-    //                                .cornerRadius(8)
-    //                            Text(board.name)
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //            .navigationBarTitle("Board")
-    //            .navigationBarItems(trailing: HStack {
-    //                Button(action: {}) {
-    //                    Image(systemName: "plus.magnifyingglass")
-    //                }
-    //                NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-    //                    Image(systemName: "rectangle.badge.plus")
-    //                }
-    //            })
-    //
-    //        }
-    //    }
-    //}
-    
-    
-    //struct MainView: View {
-    //    @EnvironmentObject var viewModel: BoardViewModel
-    //
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                // Show empty state only when no board is selected
-    //                if viewModel.selectedName.isEmpty && viewModel.selectedImage.isEmpty {
-    //                    VStack {
-    //                        Image("Empty") // Consider changing the image or hiding it depending on the context
-    //                        Text("Start designing your boards by creating a new board")
-    //                            .foregroundColor(Color("GrayMid"))
-    //                            .multilineTextAlignment(.center)
-    //                    }
-    //                }
-    //
-    //                // Show the selected board if available
-    //                if !viewModel.selectedName.isEmpty && !viewModel.selectedImage.isEmpty {
-    //                    VStack {
-    //                        Image(viewModel.selectedImage)
-    //                            .resizable()
-    //                            .aspectRatio(contentMode: .fill)
-    //                            .frame(width: 171, height: 216)
-    //                            .cornerRadius(8)
-    //                        Text(viewModel.selectedName)
-    //                    }
-    //                }
-    //            }
-    //            .navigationBarTitle("Board")
-    //            .navigationBarItems(trailing: HStack {
-    //                Button(action: {
-    //
-    //                }) {
-    //                    Image(systemName: "plus.magnifyingglass")
-    //                }
-    //                NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-    //                    Image(systemName: "rectangle.badge.plus")
-    //                }
-    //            })
-    //            .accentColor(Color("MainColor"))
-    //        }
-    //    }
-    //}
-    //
-    
-    //
-    //class BoardViewModel: ObservableObject {
-    //    @Published var selectedName: String = ""
-    //    @Published var selectedImage: String = ""
-    //
-    //    func createBoard(name: String, image: String) {
-    //        self.selectedName = name
-    //        self.selectedImage = image
-    //    }
-    //}
-    //
-    //struct MainView: View {
-    //    @EnvironmentObject var viewModel: BoardViewModel
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                Image("Empty")
-    //                HStack(spacing: 10) {
-    //                    Text("Start designing your boards by creating a new board")
-    //                        .foregroundColor(Color("GrayMid"))
-    //                        .multilineTextAlignment(.center)
-    //
-    //                    if !viewModel.selectedName.isEmpty && !viewModel.selectedImage.isEmpty {
-    //                        VStack {
-    //                            Image(viewModel.selectedImage)
-    //                                .resizable()
-    //                                .aspectRatio(contentMode: .fill)
-    //                                .frame(width: 171, height: 216)
-    //                                .cornerRadius(8)
-    //                            Text(viewModel.selectedName)
-    //                        }
-    //                    }
-    //                }
-    //                .navigationBarTitle("Board")
-    //                .navigationBarItems(trailing:
-    //                                        HStack {
-    //                    Button(action: {
-    //
-    //                    }) {
-    //                        Image(systemName: "plus.magnifyingglass")
-    //                    }
-    //                    Button(action: {
-    //
-    //                    }) {
-    //                        NavigationLink(destination: CreateBoardView().environmentObject(viewModel)) {
-    //                            Image(systemName: "rectangle.badge.plus")
-    //                        }
-    //                    }
-    //                })
-    //                .accentColor(Color("MainColor"))
-    //
-    //            }
-    //        }
-    //    }
-    //}
-    //
-    //struct MainView_Previews: PreviewProvider {
-    //    static var previews: some View {
-    //        MainView().environmentObject(BoardViewModel())
-    //    }
-    //}
-    
-    
-    
-    
-    
-    //struct MainView: View {
-    //    var body: some View {
-    //        NavigationStack {
-    //            VStack {
-    //                Image("Empty")
-    //                HStack(spacing: 10) {
-    //                    Text("Start designing your boards by creating a new board")
-    //                        .foregroundColor(Color("GrayMid"))
-    //                        .multilineTextAlignment(.center)
-    //
-    //                    if !selectedName.isEmpty && !selectedImage.isEmpty {
-    //                        VStack {
-    //                            Image(selectedImage)
-    //                                .resizable()
-    //                                .aspectRatio(contentMode: .fill)
-    //                                .frame(width: 171, height: 216)
-    //                                .cornerRadius(8)
-    //                            Text(selectedName)
-    //                        }
-    //                    }
-    //                }
-    //                .padding(.horizontal)
-    //            }
-    //            .navigationBarTitle("Board")
-    //            .navigationBarItems(trailing:
-    //                HStack {
-    //                    Button(action: {
-    //                    }) {
-    //                        Image(systemName: "plus.magnifyingglass")
-    //                    }
-    //                    Button(action: {
-    //
-    //                    }) {
-    //                        NavigationLink(destination: CreateBoardView()) {
-    //                            Image(systemName: "rectangle.badge.plus")
-    //                        }
-    //                    }
-    //                }
-    //            )
-    //            .accentColor(Color("MainColor"))
-    //        }
-    //    }
-    //}
-    //
-    //
-    //import SwiftUI
-    //
-    //struct MainView: View {
-    //    var body: some View {
-    //        NavigationStack  {
-    //            VStack {
-    //                Image("Empty")
-    //                HStack(spacing: 10) {
-    //                    Text("Start designing your boards by creating a new board")
-    //                        .foregroundColor(Color("GrayMid"))
-    //                        .multilineTextAlignment(.center)
-    ////بنحط اللي قالته فوفو
-    //                    Image(systemName: "rectangle.badge.plus")
-    //                        .foregroundColor(Color("MainColor"))
-    //
-    //                }.padding(.horizontal)
-    //
-    //            }
-    //            .navigationBarTitle("Board")
-    //            .navigationBarItems(trailing:
-    //                HStack {
-    //                    Button(action: {
-    //                        // Action for the first trailing button
-    //                    }) {
-    //                        Image(systemName: "plus.magnifyingglass")
-    //                    }
-    //                Button(action: {
-    //                    // Navigate to CreateBoardView when this button is tapped
-    //                    // Here, you add the navigation logic
-    //                    // For example, you can push the CreateBoardView onto the navigation stack
-    //                }) {
-    //                    NavigationLink(destination: CreateBoardView()) {
-    //                        Image(systemName: "rectangle.badge.plus")
-    //                    }
-    //                }
-    //            }
-    //            )
-    //            .accentColor(Color("MainColor"))
-    //
-    //        }
-    //    }
-    //}
-    //
-    //#if DEBUG
-    //struct MainView_Previews: PreviewProvider {
-    //    static var previews: some View {
-    //        MainView()
-    //    }
-    //}
-    //#endif
+struct UMainView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainView()
+    }
+}
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
 
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+    }
+}

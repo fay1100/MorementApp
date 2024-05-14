@@ -1,26 +1,28 @@
-
 import SwiftUI
 
 struct DetailsView: View {
     @Binding var showingPopover: Bool
     @State private var isAcceptingResponses = true
     @State private var showingShareSheet = false
+    var boardID: String
+    var ownerNickname: String
+    var title: String
 
     var body: some View {
         VStack(alignment: .center) {
-            Text("Friends Gathering")
+            Text(title)
                 .padding(.top)
             
             Divider()
                 .padding(.horizontal)
 
             HStack(alignment: .center) {
-                Text("1245667727")
+                Text(boardID)
                     .foregroundColor(Color.gray)
                     .padding()
 
                 Button(action: {
-                    UIPasteboard.general.string = "1245667727"
+                    UIPasteboard.general.string = boardID
                 }) {
                     Image(systemName: "doc.on.doc")
                         .font(.system(size: 24, weight: .light))
@@ -57,7 +59,6 @@ struct DetailsView: View {
                     .background(Color("MainColor"))
                     .cornerRadius(10)
                 }
-
             }
 
             Toggle(isOn: $isAcceptingResponses) {
@@ -67,18 +68,18 @@ struct DetailsView: View {
 
             Spacer()
         }
-        .frame(width: 270, height: 240)
+        .frame(width: 290, height: 280)
         .background(Color.white)
         .cornerRadius(16)
-        .shadow(radius: 20)
-        .sheet(isPresented: $showingShareSheet) {
-            ActivityView(activityItems: ["Friends Gathering: 1245667727"])
-        }
+        // Uncomment the sheet if you want to implement the sharing functionality
+        //.sheet(isPresented: $showingShareSheet) {
+        //    ActivityView(activityItems: ["Friends Gathering: \(boardID)"])
+        //}
     }
 }
 
 struct DetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        DetailsView(showingPopover: .constant(true))
+        DetailsView(showingPopover: .constant(true), boardID: "12345", ownerNickname: "JaneDoe", title: "My Friends' Gathering")
     }
 }

@@ -14,8 +14,8 @@ struct FianalApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Assuming BoardView requires a parameter named 'addSticker' rather than 'sticker'
-            BoardView(inputImage: $inputImage, addSticker: Sticker(imageName: stickerImageName))
+SplashScreen()
         }
     }
 }
+ 
