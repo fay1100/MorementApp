@@ -167,6 +167,7 @@ struct MainView: View {
         .cornerRadius(10)
         .padding()
     }
+    
 
     
     func fetchUserProfile() {
@@ -266,6 +267,8 @@ struct MainView: View {
         }
     }
 }
+
+
 
 struct UMainView_Previews: PreviewProvider {
     static var previews: some View {

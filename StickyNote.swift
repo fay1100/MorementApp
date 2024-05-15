@@ -1,5 +1,5 @@
 import SwiftUI
-
+import CloudKit
 
 // StickyNote data structure
 class StickyNote: Identifiable, ObservableObject {
@@ -11,13 +11,17 @@ class StickyNote: Identifiable, ObservableObject {
     @Published var isBold: Bool
     @Published var rotation: Angle  // Add rotation property
 
-    init(text: String, position: CGPoint = CGPoint(x: 100, y: 100), scale: CGFloat = 1.0, color: Color = .yellow, isBold: Bool = false, rotation: Angle = .zero) {
+    var recordID: CKRecord.ID?  // لتخزين معرف CloudKit
+
+    // البناء المحدث
+    init(text: String, position: CGPoint = CGPoint(x: 100, y: 100), scale: CGFloat = 1.0, color: Color = .yellow, isBold: Bool = false, rotation: Angle = .zero, recordID: CKRecord.ID? = nil) {
         self.text = text
         self.position = position
         self.scale = scale
         self.color = color
         self.isBold = isBold
-        self.rotation = rotation  // Initialize rotation
+        self.rotation = rotation
+        self.recordID = recordID
     }
 }
 
@@ -104,7 +108,8 @@ struct StickyNoteToolbar: View {
             }
             .frame(width: 360, height: 90)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 25))      .cornerRadius(10)
+            .clipShape(RoundedRectangle(cornerRadius: 25))
+            .cornerRadius(10)
         }
     }
 }

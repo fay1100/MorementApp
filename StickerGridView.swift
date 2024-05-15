@@ -59,3 +59,10 @@ struct Sticker: Identifiable {
 
 
 
+
+struct BoardImage: Identifiable {
+    var id = UUID()
+    var image: UIImage
+    var position: CGPoint
+    var scale: CGFloat
+}

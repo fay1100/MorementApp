@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */; };
+		5A364FE52BF4409A004F65B4 /* StickyNoteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A364FE42BF4409A004F65B4 /* StickyNoteManager.swift */; };
 		5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */; };
 		5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */; };
 		5A62D7C22BC37A8700BBCE5C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */; };
@@ -52,6 +53,7 @@
 
 /* Begin PBXFileReference section */
 		0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
+		5A364FE42BF4409A004F65B4 /* StickyNoteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickyNoteManager.swift; sourceTree = "<group>"; };
 		5A62D7BA2BC37A8600BBCE5C /* Fianal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fianal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FianalApp.swift; sourceTree = "<group>"; };
 		5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 		5A62D7B12BC37A8600BBCE5C = {
 			isa = PBXGroup;
 			children = (
+				5A364FE42BF4409A004F65B4 /* StickyNoteManager.swift */,
 				5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */,
 				5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */,
 				5A62D7BC2BC37A8600BBCE5C /* Fianal */,
@@ -324,6 +327,7 @@
 				5ACBB25E2BF409F9002EEF42 /* StickyNote.swift in Sources */,
 				5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */,
 				5A62D7BE2BC37A8600BBCE5C /* FianalApp.swift in Sources */,
+				5A364FE52BF4409A004F65B4 /* StickyNoteManager.swift in Sources */,
 				E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */,
 				E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */,
 				5ACBB2582BF409A9002EEF42 /* ToolbarView.swift in Sources */,
@@ -496,7 +500,7 @@
 				DEVELOPMENT_TEAM = 25ANLCX5P6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "\"Our app needs access to your photo library so you can select a profile picture to personalize your account.\"\n\n";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app requires access to your photo library to allow you to select photos and add them to your board";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -527,7 +531,7 @@
 				DEVELOPMENT_TEAM = 25ANLCX5P6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "\"Our app needs access to your photo library so you can select a profile picture to personalize your account.\"\n\n";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app requires access to your photo library to allow you to select photos and add them to your board";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

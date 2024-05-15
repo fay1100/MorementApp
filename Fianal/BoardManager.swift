@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import CloudKit
+import SwiftUI
 
 
 
@@ -8,14 +9,14 @@ class BoardManager {
     static let shared = BoardManager()
     private let publicDatabase = CKContainer(identifier: "iCloud.MorementCloud").publicCloudDatabase
     private var cache = NSCache<NSString, CKRecord>()  // Cache for storing boards
-
+    
     func generateUniqueID(completion: @escaping (Result<String, Error>) -> Void) {
         func generateRandomID() -> String {
             let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             let numbers = "0123456789"
             
             let uniqueID = (0..<5).compactMap { _ in letters.randomElement() }
-                              + (0..<5).compactMap { _ in numbers.randomElement() }
+            + (0..<5).compactMap { _ in numbers.randomElement() }
             return String(uniqueID.shuffled())
         }
         
@@ -36,59 +37,76 @@ class BoardManager {
         checkID(generateRandomID())
     }
     
-
+    
     func createBoard(title: String, image: UIImage?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-         let imageAsset = image.flatMap { createImageAsset(from: $0) }
-         generateUniqueID { result in
-             switch result {
-             case .success(let uniqueID):
-                 UserProfileManager.shared.fetchUserProfile { result in
-                     switch result {
-                     case .success(let nickname):
-                         guard let nickname = nickname else {
-                             completion(.failure(NSError(domain: "BoardManagerError", code: 1003, userInfo: [NSLocalizedDescriptionKey: "User profile not found"])))
-                             return
-                         }
-                         self.createBoardRecord(uniqueID: uniqueID, title: title, ownerNickname: nickname, imageAsset: imageAsset, completion: completion)
-                     case .failure(let error):
-                         completion(.failure(error))
-                     }
-                 }
-             case .failure(let error):
-                 completion(.failure(error))
-             }
-         }
-     }
-
-     // Helper to create and save a board record to CloudKit
-     private func createBoardRecord(uniqueID: String, title: String, ownerNickname: String, imageAsset: CKAsset?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-         let boardRecord = CKRecord(recordType: "Board")
-         boardRecord["boardID"] = uniqueID
-         boardRecord["title"] = title
-         boardRecord["owner"] = CKRecord.Reference(recordID: CKRecord.ID(recordName: ownerNickname), action: .none)
-
-         if let asset = imageAsset {
-             boardRecord["image"] = asset
-         }
-
-         publicDatabase.save(boardRecord) { record, error in
-             DispatchQueue.main.async {
-                 if let error = error {
-                     completion(.failure(error))
-                 } else if let record = record {
-                     completion(.success(record))
-                 } else {
-                     completion(.failure(NSError(domain: "BoardManagerError", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Unknown error occurred"])))
-                 }
-             }
-         }
-     }
-
-     // Converts UIImage to CKAsset by writing to a temporary file
+        let imageAsset = image.flatMap { createImageAsset(from: $0) }
+        generateUniqueID { result in
+            switch result {
+            case .success(let uniqueID):
+                UserProfileManager.shared.fetchUserProfile { result in
+                    switch result {
+                    case .success(let nickname):
+                        guard let nickname = nickname else {
+                            completion(.failure(NSError(domain: "BoardManagerError", code: 1003, userInfo: [NSLocalizedDescriptionKey: "User profile not found"])))
+                            return
+                        }
+                        self.createBoardRecord(uniqueID: uniqueID, title: title, ownerNickname: nickname, imageAsset: imageAsset) { result in
+                            switch result {
+                            case .success(let record):
+                                // إضافة تأخير قبل محاولة جلب البورد
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                    self.fetchBoardByBoardID(record["boardID"] as! String) { fetchResult in
+                                        switch fetchResult {
+                                        case .success(let fetchedRecord):
+                                            completion(.success(fetchedRecord))
+                                        case .failure(let error):
+                                            completion(.failure(error))
+                                        }
+                                    }
+                                }
+                            case .failure(let error):
+                                completion(.failure(error))
+                            }
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    // Helper to create and save a board record to CloudKit
+    private func createBoardRecord(uniqueID: String, title: String, ownerNickname: String, imageAsset: CKAsset?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let boardRecord = CKRecord(recordType: "Board")
+        boardRecord["boardID"] = uniqueID
+        boardRecord["title"] = title
+        boardRecord["owner"] = CKRecord.Reference(recordID: CKRecord.ID(recordName: ownerNickname), action: .none)
+        
+        if let asset = imageAsset {
+            boardRecord["image"] = asset
+        }
+        
+        publicDatabase.save(boardRecord) { record, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                } else if let record = record {
+                    completion(.success(record))
+                } else {
+                    completion(.failure(NSError(domain: "BoardManagerError", code: 1002, userInfo: [NSLocalizedDescriptionKey: "Unknown error occurred"])))
+                }
+            }
+        }
+    }
+    
+    // Converts UIImage to CKAsset by writing to a temporary file
     func createImageAsset(from image: UIImage) -> CKAsset? {
         guard let data = image.jpegData(compressionQuality: 0.7) else { return nil }
         let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(NSUUID().uuidString + ".jpg")
-
+        
         do {
             try data.write(to: fileURL)
             let asset = CKAsset(fileURL: fileURL)
@@ -98,9 +116,9 @@ class BoardManager {
             return nil
         }
     }
-
-
-
+    
+    
+    
     func fetchBoards(completion: @escaping (Result<[(CKRecord, UIImage?)], Error>) -> Void) {
         UserProfileManager.shared.fetchUserProfile { result in
             switch result {
@@ -137,68 +155,68 @@ class BoardManager {
             }
         }
     }
-
-
-        func fetchBoardsForCurrentUser(completion: @escaping (Result<[(CKRecord, UIImage?)], Error>) -> Void) {
-            UserProfileManager.shared.fetchUserProfile { result in
-                switch result {
-                case .success(let nickname):
-                    guard let nickname = nickname else {
-                        completion(.failure(NSError(domain: "BoardManagerError", code: 1004, userInfo: [NSLocalizedDescriptionKey: "User profile not found"])))
-                        return
-                    }
-                    let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: nickname), action: .none)
-                    let predicate = NSPredicate(format: "ANY members == %@", memberReference)
-                    let query = CKQuery(recordType: "Board", predicate: predicate)
-                    
-                    self.publicDatabase.perform(query, inZoneWith: nil) { records, error in
-                        DispatchQueue.main.async {
-                            if let error = error {
-                                completion(.failure(error))
-                            } else if let records = records, !records.isEmpty {
-                                let boardDetails = records.compactMap { record -> (CKRecord, UIImage?)? in
-                                    if let imageAsset = record["image"] as? CKAsset, let fileURL = imageAsset.fileURL {
-                                        let image = UIImage(contentsOfFile: fileURL.path)
-                                        return (record, image)
-                                    }
-                                    return (record, nil)
+    
+    
+    func fetchBoardsForCurrentUser(completion: @escaping (Result<[(CKRecord, UIImage?)], Error>) -> Void) {
+        UserProfileManager.shared.fetchUserProfile { result in
+            switch result {
+            case .success(let nickname):
+                guard let nickname = nickname else {
+                    completion(.failure(NSError(domain: "BoardManagerError", code: 1004, userInfo: [NSLocalizedDescriptionKey: "User profile not found"])))
+                    return
+                }
+                let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: nickname), action: .none)
+                let predicate = NSPredicate(format: "ANY members == %@", memberReference)
+                let query = CKQuery(recordType: "Board", predicate: predicate)
+                
+                self.publicDatabase.perform(query, inZoneWith: nil) { records, error in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                        } else if let records = records, !records.isEmpty {
+                            let boardDetails = records.compactMap { record -> (CKRecord, UIImage?)? in
+                                if let imageAsset = record["image"] as? CKAsset, let fileURL = imageAsset.fileURL {
+                                    let image = UIImage(contentsOfFile: fileURL.path)
+                                    return (record, image)
                                 }
-                                completion(.success(boardDetails))
-                            } else {
-                                completion(.failure(NSError(domain: "BoardManagerError", code: 1005, userInfo: [NSLocalizedDescriptionKey: "No boards found"])))
+                                return (record, nil)
                             }
+                            completion(.success(boardDetails))
+                        } else {
+                            completion(.failure(NSError(domain: "BoardManagerError", code: 1005, userInfo: [NSLocalizedDescriptionKey: "No boards found"])))
                         }
                     }
-                case .failure(let error):
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    
+    func fetchBoardByBoardID(_ boardID: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("Fetching board with ID: \(trimmedBoardID)")
+        
+        let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
+        let query = CKQuery(recordType: "Board", predicate: predicate)
+        
+        publicDatabase.perform(query, inZoneWith: nil) { records, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error during fetch: \(error.localizedDescription)")
                     completion(.failure(error))
+                } else if let records = records, !records.isEmpty {
+                    let record = records.first!
+                    completion(.success(record))
+                } else {
+                    print("Board not found with ID: \(trimmedBoardID)")
+                    completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
                 }
             }
         }
-
-
-    func fetchBoardByBoardID(_ boardID: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-          let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
-          print("Fetching board with ID: \(trimmedBoardID)")
-
-          let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
-          let query = CKQuery(recordType: "Board", predicate: predicate)
-
-          publicDatabase.perform(query, inZoneWith: nil) { records, error in
-              DispatchQueue.main.async {
-                  if let error = error {
-                      print("Error during fetch: \(error.localizedDescription)")
-                      completion(.failure(error))
-                  } else if let records = records, !records.isEmpty {
-                      let record = records.first!
-                      completion(.success(record))
-                  } else {
-                      print("Board not found with ID: \(trimmedBoardID)")
-                      completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
-                  }
-              }
-          }
-      }
-
+    }
+    
     func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let boardRecordID = CKRecord.ID(recordName: boardID)
         publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in
@@ -206,22 +224,22 @@ class BoardManager {
                 completion(.failure(error ?? NSError(domain: "BoardManagerError", code: 1008, userInfo: [NSLocalizedDescriptionKey: "Unable to fetch board"])))
                 return
             }
-
+            
             // Get the owner reference from the board
             if let ownerRef = boardRecord["owner"] as? CKRecord.Reference, ownerRef.recordID.recordName == memberNickname {
                 // Do not add the owner as a member again
                 completion(.success(()))
                 return
             }
-
+            
             let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: memberNickname), action: .none)
             var members = boardRecord["members"] as? [CKRecord.Reference] ?? []
-
+            
             // Check if the member is already in the list
             if !members.contains(where: { $0.recordID.recordName == memberNickname }) {
                 members.append(memberReference)
                 boardRecord["members"] = members
-
+                
                 let modifyOperation = CKModifyRecordsOperation(recordsToSave: [boardRecord], recordIDsToDelete: nil)
                 modifyOperation.savePolicy = .changedKeys
                 modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
@@ -238,7 +256,7 @@ class BoardManager {
             }
         }
     }
-
+    
     func handleBoardDeletion(boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         fetchBoardByBoardID(boardID) { [weak self] result in
             switch result {
@@ -272,7 +290,7 @@ class BoardManager {
             }
         }
     }
-
+    
     private func deleteBoard(board: CKRecord, completion: @escaping (Result<Void, Error>) -> Void) {
         publicDatabase.delete(withRecordID: board.recordID) { recordID, error in
             if let error = error {
@@ -283,9 +301,12 @@ class BoardManager {
         }
     }
     
+    func saveStickyNote(_ stickyNote: StickyNote, boardID: String, completion: @escaping (Result<StickyNote, Error>) -> Void) {
+           StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: boardID, completion: completion)
+       }
+       
+       func fetchStickyNotes(forBoardID boardID: String, completion: @escaping (Result<[StickyNote], Error>) -> Void) {
+           StickyNoteManager.shared.fetchStickyNotes(forBoardID: boardID, completion: completion)
+       }
     
-
-  }
-
-   
-
+}

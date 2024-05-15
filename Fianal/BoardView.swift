@@ -1,5 +1,4 @@
 import SwiftUI
-import Photos
 import CloudKit
 
 struct BoardView: View {
@@ -9,23 +8,28 @@ struct BoardView: View {
     
     @State private var showingPopover = false
     @State private var showStickers = false
-    @State private var showPhotoPicker = false
-    @State private var tempImage: UIImage?  // Temporary variable for image selection
-    @State private var stickers: [Sticker] = []  // List to hold multiple stickers
-    @State private var stickyNotes: [StickyNote] = []  // List to hold multiple sticky notes
+    @State private var tempImage: UIImage?
+    @State private var stickers: [Sticker] = []
+    @State private var stickyNotes: [StickyNote] = []
     @State private var members: [String] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var JoinBoardView = false
     @State private var showMembersList = false
-    @State private var selectedStickerID: UUID? = nil  // For tracking the selected sticker
-    @State private var selectedStickyNoteID: UUID? = nil  // For tracking the selected sticky note
+    @State private var selectedStickerID: UUID? = nil
+    @State private var selectedStickyNoteID: UUID? = nil
+    @State private var boardImages: [BoardImage] = []
+    @State private var isImagePickerPresented = false
+    @State private var selectedImage: UIImage?
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color("GrayLight")
                     .ignoresSafeArea()
+                    .gesture(TapGesture().onEnded {
+                        selectedStickyNoteID = nil
+                    })
                 
                 ForEach($stickers) { $sticker in
                     displaySticker(sticker: $sticker)
@@ -39,21 +43,25 @@ struct BoardView: View {
                         })
                         .gesture(DragGesture()
                             .onChanged { value in
-                                stickyNote.position = value.location
+                                var updatedNote = stickyNote
+                                updatedNote.position = value.location
+                                updateStickyNote(updatedNote)
                             }
                         )
                         .gesture(MagnificationGesture()
                             .onChanged { value in
+                                var updatedNote = stickyNote
                                 let minScale: CGFloat = 0.5  // Minimum scale
-                                stickyNote.scale = max(value, minScale)  // Update the scale with a minimum limit
+                                updatedNote.scale = max(value, minScale)  // Update the scale with a minimum limit
+                                updateStickyNote(updatedNote)
                             }
                         )
                 }
                 
+                displayBoardImages()  // Display board images separately
+                
                 displayStickerGridView()
-                displayImagePicker()
             }
-            .onChange(of: tempImage, perform: handleImageSelection)
             .onAppear(perform: setupView)
             .navigationBarTitle(title, displayMode: .inline)
             .navigationBarItems(leading: backButton(), trailing: trailingButtons())
@@ -68,13 +76,13 @@ struct BoardView: View {
             Image(uiImage: sticker.wrappedValue.image)
                 .resizable()
                 .scaledToFit()
-                .scaleEffect(sticker.wrappedValue.scale)  // Apply scaling
-                .frame(width: 150 * sticker.wrappedValue.scale, height: 150 * sticker.wrappedValue.scale)  // Adjust the size as needed
-                .cornerRadius(15)  // Apply corner radius
+                .scaleEffect(sticker.wrappedValue.scale)
+                .frame(width: 150 * sticker.wrappedValue.scale, height: 150 * sticker.wrappedValue.scale)
+                .cornerRadius(15)
                 .position(sticker.wrappedValue.position)
                 .gesture(TapGesture().onEnded {
-                    selectedStickerID = sticker.wrappedValue.id  // Select the sticker on tap
-                    selectedStickyNoteID = nil  // Deselect any sticky note
+                    selectedStickerID = sticker.wrappedValue.id
+                    selectedStickyNoteID = nil
                 })
                 .gesture(DragGesture()
                     .onChanged { value in
@@ -83,8 +91,8 @@ struct BoardView: View {
                 )
                 .gesture(MagnificationGesture()
                     .onChanged { value in
-                        let minScale: CGFloat = 0.5  // Minimum scale
-                        sticker.wrappedValue.scale = max(value, minScale)  // Update the scale with a minimum limit
+                        let minScale: CGFloat = 0.5
+                        sticker.wrappedValue.scale = max(value, minScale)
                     }
                 )
             
@@ -103,7 +111,7 @@ struct BoardView: View {
             }
         }
     }
-    
+
     private func displayStickerGridView() -> some View {
         Group {
             if showStickers {
@@ -114,29 +122,9 @@ struct BoardView: View {
         }
     }
     
-    private func displayImagePicker() -> some View {
-        Group {
-            if showPhotoPicker {
-                ImagePicker(selectedImage: $tempImage, sourceType: .photoLibrary)
-            }
-        }
-    }
-    
-    private func handleImageSelection(newImage: UIImage?) {
-        if let image = newImage {
-            print("New image selected")
-            let newSticker = Sticker(image: image)
-            self.addStickerToBoard(sticker: newSticker)
-            tempImage = nil  // Reset the temporary image after use
-            self.showPhotoPicker = false // Close the photo picker
-        } else {
-            print("No image selected")
-        }
-    }
-    
     private func setupView() {
         loadMembers()
-        requestPhotoLibraryAccess()  // Request access to the photo library when the view appears
+        loadStickyNotes()
     }
     
     private func backButton() -> some View {
@@ -179,7 +167,7 @@ struct BoardView: View {
                     }
                 )
             } else {
-                ToolbarView(showStickers: $showStickers, showPhotoPicker: $showPhotoPicker, addStickyNote: addStickyNoteToBoard)
+                ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard)
             }
         }
     }
@@ -209,18 +197,45 @@ struct BoardView: View {
         }
     }
     
+    private func displayBoardImages() -> some View {
+        ForEach($boardImages) { $boardImage in
+            ZStack {
+                Image(uiImage: boardImage.image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(boardImage.scale)
+                    .frame(width: 150 * boardImage.scale, height: 150 * boardImage.scale)
+                    .cornerRadius(15)
+                    .position(boardImage.position)
+                    .gesture(DragGesture()
+                        .onChanged { value in
+                            boardImage.position = value.location
+                        }
+                    )
+                    .gesture(MagnificationGesture()
+                        .onChanged { value in
+                            let minScale: CGFloat = 0.5
+                            boardImage.scale = max(value, minScale)
+                        }
+                    )
+            }
+        }
+    }
+    
     private func addStickerToBoard(sticker: Sticker) {
         var newSticker = sticker
-        newSticker.scale = 1.0  // Adjust the initial scale as needed
+        newSticker.scale = 1.0
         
-        // Randomly position the sticker within the bounds of the view
-        let randomX = CGFloat.random(in: 50...300) // Adjust the range as needed
-        let randomY = CGFloat.random(in: 100...600) // Adjust the range as needed
+        let randomX = CGFloat.random(in: 50...300)
+        let randomY = CGFloat.random(in: 100...600)
         newSticker.position = CGPoint(x: randomX, y: randomY)
         
-        self.stickers.append(newSticker)
-        self.showStickers = false
+        DispatchQueue.main.async {
+            self.stickers.append(newSticker)
+            self.showStickers = false
+        }
     }
+
     
     private func addStickyNoteToBoard() {
         let newStickyNote = StickyNote(
@@ -230,11 +245,44 @@ struct BoardView: View {
             color: .yellow
         )
         self.stickyNotes.append(newStickyNote)
+        
+        // Save the new sticky note to CloudKit
+        StickyNoteManager.shared.saveStickyNoteBatch(newStickyNote, boardID: boardID) { result in
+            switch result {
+            case .success(let savedNote):
+                print("Sticky note saved successfully: \(savedNote)")
+                if let index = stickyNotes.firstIndex(where: { $0.id == newStickyNote.id }) {
+                    stickyNotes[index] = savedNote  // Update the local sticky note with the saved recordID
+                }
+            case .failure(let error):
+                print("Failed to save sticky note: \(error)")
+            }
+        }
+    }
+
+    
+    private func updateStickyNote(_ stickyNote: StickyNote) {
+        if let index = stickyNotes.firstIndex(where: { $0.id == stickyNote.id }) {
+            stickyNotes[index] = stickyNote
+            
+            // Save the updated sticky note to CloudKit
+            StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: boardID) { result in
+                switch result {
+                case .success(let savedNote):
+                    print("Sticky note updated successfully: \(savedNote)")
+                    stickyNotes[index] = savedNote  // Update the local sticky note with the updated recordID
+                case .failure(let error):
+                    print("Failed to update sticky note: \(error)")
+                }
+            }
+        } else {
+            print("Sticky note with ID \(stickyNote.id) not found.")
+        }
     }
     
     private func loadMembers() {
         isLoading = true
-        BoardManager.shared.fetchBoardByBoardID(boardID) { [self] result in
+        BoardManager.shared.fetchBoardByBoardID(boardID) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
@@ -249,15 +297,17 @@ struct BoardView: View {
         }
     }
     
-    private func requestPhotoLibraryAccess() {
-        PHPhotoLibrary.requestAuthorization { status in
-            switch status {
-            case .authorized:
-                print("Access granted to photo library")
-            case .denied, .restricted, .notDetermined:
-                print("Access denied or not determined")
-            default:
-                break
+    private func loadStickyNotes() {
+        isLoading = true
+        StickyNoteManager.shared.fetchStickyNotes(forBoardID: boardID) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let notes):
+                    self.stickyNotes = notes
+                case .failure(let error):
+                    self.errorMessage = "Failed to load sticky notes: \(error.localizedDescription)"
+                }
             }
         }
     }

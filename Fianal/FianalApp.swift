@@ -14,7 +14,7 @@ struct FianalApp: App {
 
     var body: some Scene {
         WindowGroup {
-SplashScreen()
+            SplashScreen()
         }
     }
 }

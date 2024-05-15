@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ToolbarView: View {
     @Binding var showStickers: Bool
-    @Binding var showPhotoPicker: Bool
     var addStickyNote: () -> Void
 
     var body: some View {
@@ -22,7 +21,6 @@ struct ToolbarView: View {
                     Divider()
 
                     Button(action: {
-                        self.showPhotoPicker.toggle()
                     }) {
                         Image(systemName: "camera")
                             .resizable()
@@ -53,6 +51,6 @@ struct ToolbarView: View {
 
 struct ToolbarView_Previews: PreviewProvider {
     static var previews: some View {
-        ToolbarView(showStickers: .constant(false), showPhotoPicker: .constant(false), addStickyNote: {})
+        ToolbarView(showStickers: .constant(false), addStickyNote: {})
     }
 }
