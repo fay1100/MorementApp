@@ -18,6 +18,7 @@
 		5A62D7DB2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7DA2BC37A8700BBCE5C /* FianalUITestsLaunchTests.swift */; };
 		5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */; };
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
+		5A86F5FB2BF5549E0092EB5A /* StickerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A86F5FA2BF5549E0092EB5A /* StickerManager.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
 		5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */; };
 		5ACBB2522BF4094F002EEF42 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */; };
@@ -67,6 +68,7 @@
 		5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DetailsView.swift; path = ../DetailsView.swift; sourceTree = "<group>"; };
 		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
+		5A86F5FA2BF5549E0092EB5A /* StickerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerManager.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
 		5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SplashScreen.swift; sourceTree = "<group>"; };
 		5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -111,9 +113,9 @@
 		5A62D7B12BC37A8600BBCE5C = {
 			isa = PBXGroup;
 			children = (
+				5A86F5FA2BF5549E0092EB5A /* StickerManager.swift */,
 				5A364FE42BF4409A004F65B4 /* StickyNoteManager.swift */,
-				5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */,
-				5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */,
+				5ACBB2552BF40995002EEF42 /* BoardManager.swift */,
 				5A62D7BC2BC37A8600BBCE5C /* Fianal */,
 				5A62D7CD2BC37A8700BBCE5C /* FianalTests */,
 				5A62D7D72BC37A8700BBCE5C /* FianalUITests */,
@@ -135,7 +137,8 @@
 			isa = PBXGroup;
 			children = (
 				5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */,
-				5ACBB2552BF40995002EEF42 /* BoardManager.swift */,
+				5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */,
+				5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */,
 				5ACBB2592BF409BB002EEF42 /* UserProfile.swift */,
 				5A62D7BD2BC37A8600BBCE5C /* FianalApp.swift */,
 				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
@@ -313,6 +316,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A86F5FB2BF5549E0092EB5A /* StickerManager.swift in Sources */,
 				5ACBB2562BF40995002EEF42 /* BoardManager.swift in Sources */,
 				5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */,
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,

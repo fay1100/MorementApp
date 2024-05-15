@@ -88,30 +88,21 @@ struct BoardView: View {
                     .onChanged { value in
                         sticker.wrappedValue.position = value.location
                     }
+                    .onEnded { _ in
+                        saveStickerPosition(sticker.wrappedValue)
+                    }
                 )
                 .gesture(MagnificationGesture()
                     .onChanged { value in
-                        let minScale: CGFloat = 0.5
-                        sticker.wrappedValue.scale = max(value, minScale)
+                        sticker.wrappedValue.scale = value
+                    }
+                    .onEnded { _ in
+                        saveStickerPosition(sticker.wrappedValue)
                     }
                 )
-            
-            if selectedStickerID == sticker.wrappedValue.id {
-                Button(action: {
-                    if let index = stickers.firstIndex(where: { $0.id == sticker.wrappedValue.id }) {
-                        stickers.remove(at: index)
-                    }
-                    selectedStickerID = nil
-                }) {
-                    Image(systemName: "trash.circle.fill")
-                        .font(.title)
-                        .foregroundColor(.red)
-                }
-                .position(x: sticker.wrappedValue.position.x + 60, y: sticker.wrappedValue.position.y - 60)
-            }
         }
     }
-
+    
     private func displayStickerGridView() -> some View {
         Group {
             if showStickers {
@@ -125,6 +116,8 @@ struct BoardView: View {
     private func setupView() {
         loadMembers()
         loadStickyNotes()
+        loadBoardImages()
+        fetchStickers()
     }
     
     private func backButton() -> some View {
@@ -224,8 +217,6 @@ struct BoardView: View {
     
     private func addStickerToBoard(sticker: Sticker) {
         var newSticker = sticker
-        newSticker.scale = 1.0
-        
         let randomX = CGFloat.random(in: 50...300)
         let randomY = CGFloat.random(in: 100...600)
         newSticker.position = CGPoint(x: randomX, y: randomY)
@@ -234,9 +225,21 @@ struct BoardView: View {
             self.stickers.append(newSticker)
             self.showStickers = false
         }
+        
+        // Save the new sticker to CloudKit
+        StickerManager.shared.saveStickerBatch(newSticker, boardID: boardID) { result in
+            switch result {
+            case .success(let savedSticker):
+                print("Sticker saved successfully: \(savedSticker)")
+                if let index = stickers.firstIndex(where: { $0.id == newSticker.id }) {
+                    stickers[index] = savedSticker  // Update the local sticker with the saved recordID
+                }
+            case .failure(let error):
+                print("Failed to save sticker: \(error)")
+            }
+        }
     }
 
-    
     private func addStickyNoteToBoard() {
         let newStickyNote = StickyNote(
             text: "",
@@ -260,7 +263,6 @@ struct BoardView: View {
         }
     }
 
-    
     private func updateStickyNote(_ stickyNote: StickyNote) {
         if let index = stickyNotes.firstIndex(where: { $0.id == stickyNote.id }) {
             stickyNotes[index] = stickyNote
@@ -280,6 +282,19 @@ struct BoardView: View {
         }
     }
     
+    private func saveStickerPosition(_ sticker: Sticker) {
+        StickerManager.shared.saveStickerBatch(sticker, boardID: boardID) { result in
+            switch result {
+            case .success(let updatedSticker):
+                if let index = stickers.firstIndex(where: { $0.id == updatedSticker.id }) {
+                    stickers[index] = updatedSticker
+                }
+            case .failure(let error):
+                print("Failed to save sticker position: \(error)")
+            }
+        }
+    }
+
     private func loadMembers() {
         isLoading = true
         BoardManager.shared.fetchBoardByBoardID(boardID) { result in
@@ -307,6 +322,25 @@ struct BoardView: View {
                     self.stickyNotes = notes
                 case .failure(let error):
                     self.errorMessage = "Failed to load sticky notes: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    private func loadBoardImages() {
+        // Implement the method to load board images from CloudKit
+    }
+
+    private func fetchStickers() {
+        isLoading = true
+        StickerManager.shared.fetchStickers(forBoardID: boardID) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let stickers):
+                    self.stickers = stickers
+                case .failure(let error):
+                    self.errorMessage = "Failed to load stickers: \(error.localizedDescription)"
                 }
             }
         }

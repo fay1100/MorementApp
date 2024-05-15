@@ -1,4 +1,5 @@
 import SwiftUI
+import CloudKit
 
 struct StickerGridView: View {
     var selectSticker: (Sticker) -> Void
@@ -12,8 +13,6 @@ struct StickerGridView: View {
 
     var body: some View {
         ZStack{
-            Color("GrayLight")
-                .ignoresSafeArea()
 
             ScrollView {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3)) {
@@ -21,7 +20,7 @@ struct StickerGridView: View {
                         Image(sticker)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 100, height: 150) // Adjust the size as needed
+                            .frame(width: 90, height: 120) // Adjust the size as needed
                             .onTapGesture {
                                 if let image = UIImage(named: sticker) {
                                     let newSticker = Sticker(image: image)
@@ -34,7 +33,7 @@ struct StickerGridView: View {
                 .padding()
             }
             .navigationTitle("Stickers")
-        }
+        }.background(Color.white)
     }
 }
 
@@ -48,13 +47,19 @@ struct StickerGridView_Previews: PreviewProvider {
     }
 }
 
+
+
+
+
+
+
 struct Sticker: Identifiable {
-    let id = UUID()
+    var id = UUID()
     var image: UIImage
-    
     var position: CGPoint = CGPoint(x: 100, y: 100)  // Default position
     var scale: CGFloat = 1.0  // Default scale
     var isFromCameraRoll: Bool = false  // Indicates if the sticker is from the camera roll
+    var recordID: CKRecord.ID? = nil  // Add recordID for CloudKit
 }
 
 
