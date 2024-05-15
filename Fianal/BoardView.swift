@@ -21,6 +21,7 @@ struct BoardView: View {
     @State private var boardImages: [BoardImage] = []
     @State private var isImagePickerPresented = false
     @State private var selectedImage: UIImage?
+    @State private var stickerToDelete: Sticker? = nil
 
     var body: some View {
         NavigationStack {
@@ -29,6 +30,7 @@ struct BoardView: View {
                     .ignoresSafeArea()
                     .gesture(TapGesture().onEnded {
                         selectedStickyNoteID = nil
+                        stickerToDelete = nil
                     })
                 
                 ForEach($stickers) { $sticker in
@@ -40,6 +42,7 @@ struct BoardView: View {
                         .gesture(TapGesture().onEnded {
                             selectedStickyNoteID = stickyNote.id  // Select the sticky note on tap
                             selectedStickerID = nil  // Deselect any sticker
+                            stickerToDelete = nil
                         })
                         .gesture(DragGesture()
                             .onChanged { value in
@@ -61,6 +64,22 @@ struct BoardView: View {
                 displayBoardImages()  // Display board images separately
                 
                 displayStickerGridView()
+                
+                if let stickerToDelete = stickerToDelete {
+                    VStack {
+                        Text("🗑️")
+                            .font(.largeTitle)
+                            .padding()
+                            .background(Color.white.opacity(0.5))  // Adjust opacity to 0.7
+                            .clipShape(Circle())
+
+                            .onTapGesture {
+                                deleteSticker(stickerToDelete)
+                                self.stickerToDelete = nil  // Hide the delete icon after deletion
+                            }
+                    }
+                    .position(stickerToDelete.position)
+                }
             }
             .onAppear(perform: setupView)
             .navigationBarTitle(title, displayMode: .inline)
@@ -83,7 +102,13 @@ struct BoardView: View {
                 .gesture(TapGesture().onEnded {
                     selectedStickerID = sticker.wrappedValue.id
                     selectedStickyNoteID = nil
+                    stickerToDelete = nil  // Hide the delete icon if tapping on a sticker
                 })
+                .gesture(LongPressGesture()
+                    .onEnded { _ in
+                        stickerToDelete = sticker.wrappedValue
+                    }
+                )
                 .gesture(DragGesture()
                     .onChanged { value in
                         sticker.wrappedValue.position = value.location
@@ -152,8 +177,17 @@ struct BoardView: View {
                 StickyNoteToolbar(
                     stickyNote: stickyNotes[index],
                     onDelete: {
-                        stickyNotes.remove(at: index)
-                        self.selectedStickyNoteID = nil
+                        // Remove from CloudKit
+                        StickyNoteManager.shared.deleteStickyNote(stickyNotes[index]) { result in
+                            switch result {
+                            case .success():
+                                // Remove from local array
+                                stickyNotes.remove(at: index)
+                                self.selectedStickyNoteID = nil
+                            case .failure(let error):
+                                print("Failed to delete sticky note: \(error)")
+                            }
+                        }
                     },
                     onBold: {
                         stickyNotes[index].isBold.toggle()  // Toggle bold state
@@ -291,6 +325,20 @@ struct BoardView: View {
                 }
             case .failure(let error):
                 print("Failed to save sticker position: \(error)")
+            }
+        }
+    }
+    
+    private func deleteSticker(_ sticker: Sticker) {
+        StickerManager.shared.deleteSticker(sticker) { result in
+            switch result {
+            case .success():
+                if let index = stickers.firstIndex(where: { $0.id == sticker.id }) {
+                    stickers.remove(at: index)
+                }
+                self.stickerToDelete = nil  // Hide the delete icon after deletion
+            case .failure(let error):
+                print("Failed to delete sticker: \(error)")
             }
         }
     }

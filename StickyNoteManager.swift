@@ -30,11 +30,6 @@ extension Color {
     }
 }
 
-
-
-
-
-
 import Foundation
 import UIKit
 import CloudKit
@@ -81,7 +76,7 @@ class StickyNoteManager {
         record["positionX"] = Double(stickyNote.position.x)
         record["positionY"] = Double(stickyNote.position.y)
         record["scale"] = Double(stickyNote.scale)
-        record["color"] = stickyNote.color.toHex() ?? "#FFFFFF"
+        record["color"] = stickyNote.color.toHex()
         record["isBold"] = stickyNote.isBold ? 1 : 0
         record["rotation"] = stickyNote.rotation.degrees
         
@@ -144,6 +139,23 @@ class StickyNoteManager {
                     completion(.success(stickyNotes))
                 } else {
                     completion(.success([]))
+                }
+            }
+        }
+    }
+    
+    func deleteStickyNote(_ stickyNote: StickyNote, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let recordID = stickyNote.recordID else {
+            completion(.failure(NSError(domain: "InvalidRecordID", code: -1, userInfo: nil)))
+            return
+        }
+        
+        publicDatabase.delete(withRecordID: recordID) { recordID, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
                 }
             }
         }

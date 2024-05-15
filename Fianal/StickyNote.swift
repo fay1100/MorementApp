@@ -130,3 +130,4 @@ struct StickyNoteToolbar_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
     }
 }
+

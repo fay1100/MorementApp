@@ -2,8 +2,6 @@ import Foundation
 import CloudKit
 import UIKit
 
-
-
 class StickerManager {
     static let shared = StickerManager()
     private let publicDatabase = CKContainer(identifier: "iCloud.MorementCloud").publicCloudDatabase
@@ -125,5 +123,22 @@ class StickerManager {
         imageCache.setObject(image, forKey: fileURL.path as NSString)
         
         return image
+    }
+
+    func deleteSticker(_ sticker: Sticker, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let recordID = sticker.recordID else {
+            completion(.failure(NSError(domain: "InvalidRecordID", code: -1, userInfo: nil)))
+            return
+        }
+        
+        publicDatabase.delete(withRecordID: recordID) { recordID, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
     }
 }
