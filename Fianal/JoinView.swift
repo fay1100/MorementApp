@@ -14,74 +14,69 @@ struct JoinBoardView: View {
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
+        VStack(alignment: .center) {
+            Text("Enter the board code")
+                .padding(.bottom)
             
-            VStack(alignment: .center) {
-                Text("Enter the board code")
-                    .padding(.bottom)
-                
-                Divider()
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                
-                TextField("Enter Board ID", text: $boardID)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                    .padding(.top, -20)
-                
-                if let joinError = joinError {
-                    Text(joinError).foregroundColor(.red)
-                        .font(.system(size: 12))
-                }
-                if isJoining {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(1.5)
-                        .zIndex(1)
-                }
-                
-                HStack {
-                    Button("Cancel") {
-                        isShowingPopover = false
-                    }
-                    .background(Color.white)
-                    .foregroundColor(.black)
-                    .frame(width: 115, height: 50)
-                    .cornerRadius(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color("MainColor"), lineWidth: 1)
-                    )
-                    
-                    Button("Join Board") {
-                        joinBoard()
-                    }
-                    .frame(width: 115, height: 50)
-                    .background(Color("MainColor"))
-                    .cornerRadius(8)
-                    .disabled(boardID.isEmpty || isJoining)
-                    .foregroundColor(.white)
-                    .fullScreenCover(isPresented: $navigateToBoard) {
-                                 BoardView(boardID: boardID, ownerNickname: ownerNickname, title: boardTitle)
-                             }
-                    
-                }
-                .padding(.top, 30)
-                
-                // Ensures navigation link is properly set to activate
-              
+            Divider()
+                .padding(.horizontal)
+                .padding(.bottom)
+            
+            TextField("Enter Board ID", text: $boardID)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+                .padding(.top, -20)
+            
+            if let joinError = joinError {
+                Text(joinError).foregroundColor(.red)
+                    .font(.system(size: 12))
             }
-            .frame(width: 290, height: 280)
-            .background(Color.white)
-            .cornerRadius(16)
-            .shadow(radius: 20)
-        
-        
+            if isJoining {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(1.5)
+                    .zIndex(1)
+            }
+            
+            HStack {
+                Button("Cancel") {
+                    isShowingPopover = false
+                }
+                .background(Color.white)
+                .foregroundColor(.black)
+                .frame(width: 115, height: 50)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color("MainColor"), lineWidth: 1)
+                )
+                
+                Button("Join Board") {
+                    joinBoard()
+                }
+                .frame(width: 115, height: 50)
+                .background(Color("MainColor"))
+                .cornerRadius(8)
+                .disabled(boardID.isEmpty || isJoining)
+                .foregroundColor(.white)
+                .fullScreenCover(isPresented: $navigateToBoard) {
+                    BoardView(boardID: boardID, ownerNickname: ownerNickname, title: boardTitle)
+                }
+            }
+            .padding(.top, 30)
+        }
+        .frame(width: 290, height: 280)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(radius: 20)
     }
+
     private func joinBoard() {
         let cleanBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
         isJoining = true
+        joinError = nil
         BoardManager.shared.fetchBoardByBoardID(cleanBoardID) { [self] result in
-            DispatchQueue.main.async {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // Adding a slight delay
                 isJoining = false
                 switch result {
                 case .success(let boardRecord):
@@ -108,4 +103,3 @@ struct JoinBoardView: View {
         }
     }
 }
-

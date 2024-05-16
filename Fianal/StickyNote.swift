@@ -52,24 +52,36 @@ struct StickyNoteToolbar: View {
     @State private var showColors = false
 
     let availableColors: [Color] = [
-        Color.purple, Color.yellow, Color.orange, Color.green, Color.blue
-    ]
+          Color("lightOrang"),
+          Color("mint"),
+          Color("pink"),
+          Color("skyBlue"),
+          Color("yellow2")
+      ]
 
     var body: some View {
         ZStack {
             HStack {
                 Button(action: onDelete) {
                     Image(systemName: "trash")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 30, height: 30)
+
                         .foregroundColor(.red)
-                        .padding(.trailing, 20)
+                        .padding(30)
                 }
 
                 Divider()
 
                 Button(action: onBold) {
                     Image(systemName: "bold")
-                        .foregroundColor(.black)
-                        .padding(.leading, 40)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundColor(Color("MainColor"))
+                    
+                        .frame(width: 30, height: 25)
+                        .padding(30)
                 }
 
                 Divider()
@@ -78,8 +90,11 @@ struct StickyNoteToolbar: View {
                     showColors.toggle()
                 }) {
                     Image(systemName: "paintpalette")
-                        .foregroundColor(.black)
-                        .padding(.leading, 70)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundColor(Color("MainColor"))
+                        .frame(width: 30, height: 30)
+                        .padding(30)
                 }
             }
             .frame(width: 360, height: 90)

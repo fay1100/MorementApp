@@ -19,6 +19,7 @@
 		5A62D7E82BC3A4A700BBCE5C /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */; };
 		5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */; };
 		5A6746642BF5B78F0049B91E /* BoardImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6746632BF5B78F0049B91E /* BoardImageManager.swift */; };
+		5A6746662BF61C370049B91E /* splashVideo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5A6746652BF61C370049B91E /* splashVideo.mp4 */; };
 		5A86F5FB2BF5549E0092EB5A /* StickerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A86F5FA2BF5549E0092EB5A /* StickerManager.swift */; };
 		5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */; };
 		5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB24F2BF4093D002EEF42 /* SplashScreen.swift */; };
@@ -69,6 +70,7 @@
 		5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DetailsView.swift; path = ../DetailsView.swift; sourceTree = "<group>"; };
 		5A6746632BF5B78F0049B91E /* BoardImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardImageManager.swift; sourceTree = "<group>"; };
+		5A6746652BF61C370049B91E /* splashVideo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = splashVideo.mp4; sourceTree = "<group>"; };
 		5A701CFE2BD7B2D500FD5800 /* Fianal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fianal.entitlements; sourceTree = "<group>"; };
 		5A86F5FA2BF5549E0092EB5A /* StickerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerManager.swift; sourceTree = "<group>"; };
 		5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerRepresentable.swift; sourceTree = "<group>"; };
@@ -158,6 +160,7 @@
 				5ACBB2532BF40969002EEF42 /* MembersListView.swift */,
 				5ACBB2572BF409A9002EEF42 /* ToolbarView.swift */,
 				5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */,
+				5A6746652BF61C370049B91E /* splashVideo.mp4 */,
 				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
 				5A62D7C32BC37A8700BBCE5C /* Preview Content */,
 			);
@@ -295,6 +298,7 @@
 			files = (
 				5A62D7C52BC37A8700BBCE5C /* Preview Assets.xcassets in Resources */,
 				5A62D7C22BC37A8700BBCE5C /* Assets.xcassets in Resources */,
+				5A6746662BF61C370049B91E /* splashVideo.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

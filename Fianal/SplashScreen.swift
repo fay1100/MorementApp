@@ -1,20 +1,16 @@
 import SwiftUI
+import AVKit
 
 struct SplashScreen: View {
     @State private var isActive = false
     @State private var isOnboardingCompleted = false
     @Environment(\.scenePhase) private var scenePhase
-    private let splashDelay = 3.0 // Configurable delay duration
+    private let splashDelay = 1.0 // Configurable delay duration
 
     var body: some View {
-        VStack {
-            Image("logo") // Ensure this image is available in your assets
-                .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 200)
-            Text("Welcome to MyApp")
-                .font(.headline)
-                .foregroundColor(.blue)
+        ZStack {
+            VideoPlayerView(videoName: "splashVideo")
+                .edgesIgnoringSafeArea(.all)
         }
         .onAppear {
             isOnboardingCompleted = UserDefaults.standard.bool(forKey: "OnboardingCompleted")
@@ -23,7 +19,6 @@ struct SplashScreen: View {
                 self.isActive = true
             }
         }
-
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active && !isActive {
                 // Optionally reset or adjust behavior when app comes to foreground
@@ -36,6 +31,50 @@ struct SplashScreen: View {
                 OnboardingView()
             }
         }
+    }
+}
+
+struct VideoPlayerView: UIViewRepresentable {
+    let videoName: String
+    
+    func makeUIView(context: Context) -> UIView {
+        return LoopingPlayerUIView(frame: .zero, videoName: videoName)
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // No update logic needed for now
+    }
+}
+
+class LoopingPlayerUIView: UIView {
+    private var player: AVQueuePlayer?
+    private var playerLayer: AVPlayerLayer?
+
+    init(frame: CGRect, videoName: String) {
+        super.init(frame: frame)
+        let videoURL = Bundle.main.url(forResource: videoName, withExtension: "mp4")!
+        let playerItem = AVPlayerItem(url: videoURL)
+        player = AVQueuePlayer(playerItem: playerItem)
+        playerLayer = AVPlayerLayer(player: player)
+        playerLayer?.videoGravity = .resizeAspectFill
+        layer.addSublayer(playerLayer!)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd(notification:)), name: .AVPlayerItemDidPlayToEndTime, object: player?.currentItem)
+        player?.play()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        playerLayer?.frame = bounds
+    }
+
+    @objc private func playerItemDidReachEnd(notification: Notification) {
+        player?.seek(to: .zero)
+        player?.play()
     }
 }
 

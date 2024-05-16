@@ -195,67 +195,59 @@ class BoardManager {
     
     
     func fetchBoardByBoardID(_ boardID: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-        let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("Fetching board with ID: \(trimmedBoardID)")
-        
-        let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
-        let query = CKQuery(recordType: "Board", predicate: predicate)
-        
-        publicDatabase.perform(query, inZoneWith: nil) { records, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    print("Error during fetch: \(error.localizedDescription)")
-                    completion(.failure(error))
-                } else if let records = records, !records.isEmpty {
-                    let record = records.first!
-                    completion(.success(record))
-                } else {
-                    print("Board not found with ID: \(trimmedBoardID)")
-                    completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
-                }
-            }
-        }
-    }
+          let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
+          let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
+          let query = CKQuery(recordType: "Board", predicate: predicate)
+          
+          publicDatabase.perform(query, inZoneWith: nil) { records, error in
+              DispatchQueue.main.async {
+                  if let error = error {
+                      completion(.failure(error))
+                  } else if let records = records, !records.isEmpty {
+                      completion(.success(records.first!))
+                  } else {
+                      completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
+                  }
+              }
+          }
+      }
+      
+      func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
+          let boardRecordID = CKRecord.ID(recordName: boardID)
+          publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in
+              guard let self = self, let boardRecord = record else {
+                  completion(.failure(error ?? NSError(domain: "BoardManagerError", code: 1008, userInfo: [NSLocalizedDescriptionKey: "Unable to fetch board"])))
+                  return
+              }
+              
+              if let ownerRef = boardRecord["owner"] as? CKRecord.Reference, ownerRef.recordID.recordName == memberNickname {
+                  completion(.success(()))
+                  return
+              }
+              
+              let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: memberNickname), action: .none)
+              var members = boardRecord["members"] as? [CKRecord.Reference] ?? []
+              
+              if !members.contains(where: { $0.recordID.recordName == memberNickname }) {
+                  members.append(memberReference)
+                  boardRecord["members"] = members
+                  
+                  let modifyOperation = CKModifyRecordsOperation(recordsToSave: [boardRecord], recordIDsToDelete: nil)
+                  modifyOperation.savePolicy = .changedKeys
+                  modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
+                      if let error = error {
+                          completion(.failure(error))
+                      } else {
+                          completion(.success(()))
+                      }
+                  }
+                  self.publicDatabase.add(modifyOperation)
+              } else {
+                  completion(.success(()))
+              }
+          }
+      }
     
-    func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let boardRecordID = CKRecord.ID(recordName: boardID)
-        publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in
-            guard let self = self, let boardRecord = record else {
-                completion(.failure(error ?? NSError(domain: "BoardManagerError", code: 1008, userInfo: [NSLocalizedDescriptionKey: "Unable to fetch board"])))
-                return
-            }
-            
-            // Get the owner reference from the board
-            if let ownerRef = boardRecord["owner"] as? CKRecord.Reference, ownerRef.recordID.recordName == memberNickname {
-                // Do not add the owner as a member again
-                completion(.success(()))
-                return
-            }
-            
-            let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: memberNickname), action: .none)
-            var members = boardRecord["members"] as? [CKRecord.Reference] ?? []
-            
-            // Check if the member is already in the list
-            if !members.contains(where: { $0.recordID.recordName == memberNickname }) {
-                members.append(memberReference)
-                boardRecord["members"] = members
-                
-                let modifyOperation = CKModifyRecordsOperation(recordsToSave: [boardRecord], recordIDsToDelete: nil)
-                modifyOperation.savePolicy = .changedKeys
-                modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
-                    if let error = error {
-                        completion(.failure(error))
-                    } else {
-                        completion(.success(()))
-                    }
-                }
-                self.publicDatabase.add(modifyOperation)
-            } else {
-                // The member is already a part of the board, so we complete with success without making changes
-                completion(.success(()))
-            }
-        }
-    }
     
     func handleBoardDeletion(boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         fetchBoardByBoardID(boardID) { [weak self] result in
@@ -300,6 +292,19 @@ class BoardManager {
             }
         }
     }
+    
+    func fetchBoardByBoardIDAsync(_ boardID: String) async throws -> CKRecord {
+           return try await withCheckedThrowingContinuation { continuation in
+               fetchBoardByBoardID(boardID) { result in
+                   switch result {
+                   case .success(let record):
+                       continuation.resume(returning: record)
+                   case .failure(let error):
+                       continuation.resume(throwing: error)
+                   }
+               }
+           }
+       }
     
     func saveStickyNote(_ stickyNote: StickyNote, boardID: String, completion: @escaping (Result<StickyNote, Error>) -> Void) {
            StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: boardID, completion: completion)
