@@ -33,10 +33,6 @@ struct BoardView: View {
                         stickerToDelete = nil
                     })
                 
-                ForEach($stickers) { $sticker in
-                    displaySticker(sticker: $sticker)
-                }
-                
                 ForEach(stickyNotes) { stickyNote in
                     StickyNoteView(stickyNote: stickyNote)
                         .gesture(TapGesture().onEnded {
@@ -60,6 +56,10 @@ struct BoardView: View {
                             }
                         )
                 }
+                ForEach($stickers) { $sticker in
+                    displaySticker(sticker: $sticker)
+                }
+ 
                 
                 displayBoardImages()  // Display board images separately
                 
@@ -125,9 +125,10 @@ struct BoardView: View {
                         saveStickerPosition(sticker.wrappedValue)
                     }
                 )
+                .zIndex(1)  // This ensures the sticker appears above other elements
         }
     }
-    
+
     private func displayStickerGridView() -> some View {
         Group {
             if showStickers {
@@ -275,9 +276,12 @@ struct BoardView: View {
     }
 
     private func addStickyNoteToBoard() {
+        let randomX = CGFloat.random(in: 50...300)  // تحديد نطاق للإحداثيات العشوائية X
+        let randomY = CGFloat.random(in: 100...600)  // تحديد نطاق للإحداثيات العشوائية Y
+
         let newStickyNote = StickyNote(
             text: "",
-            position: CGPoint(x: 150, y: 150),
+            position: CGPoint(x: randomX, y: randomY),
             scale: 1.0,
             color: .yellow
         )
