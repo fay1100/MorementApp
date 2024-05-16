@@ -50,16 +50,17 @@ struct OnboardingView: View {
                         .cornerRadius(8)
                 }
                 .padding()
+                .disabled(userName.isEmpty && currentPage == onboardingData.count)
                 
                 Spacer()
             }
             .navigationBarItems(trailing: Button("Skip") {
                 UserDefaults.standard.set(true, forKey: "OnboardingCompleted")
                 isOnboardingComplete = true
-            }.foregroundColor(.gray))
-
-
-
+            }
+            .foregroundColor(.gray)
+            .disabled(userName.isEmpty && !userHasProfile && currentPage == onboardingData.count)
+            )
             .fullScreenCover(isPresented: $isOnboardingComplete, content: {
                 MainView()
             })
@@ -71,7 +72,7 @@ struct OnboardingView: View {
 
     private func checkUserProfileExistence() {
         let onboardingCompleted = UserDefaults.standard.bool(forKey: "OnboardingCompleted")
-        if onboardingCompleted {
+        if (onboardingCompleted) {
             self.isOnboardingComplete = true
             return
         }
