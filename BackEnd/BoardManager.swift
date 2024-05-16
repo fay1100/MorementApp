@@ -3,8 +3,6 @@ import UIKit
 import CloudKit
 import SwiftUI
 
-
-
 class BoardManager {
     static let shared = BoardManager()
     private let publicDatabase = CKContainer(identifier: "iCloud.MorementCloud").publicCloudDatabase
@@ -36,7 +34,6 @@ class BoardManager {
         
         checkID(generateRandomID())
     }
-    
     
     func createBoard(title: String, image: UIImage?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         let imageAsset = image.flatMap { createImageAsset(from: $0) }
@@ -78,12 +75,13 @@ class BoardManager {
         }
     }
     
-    // Helper to create and save a board record to CloudKit
     private func createBoardRecord(uniqueID: String, title: String, ownerNickname: String, imageAsset: CKAsset?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         let boardRecord = CKRecord(recordType: "Board")
         boardRecord["boardID"] = uniqueID
         boardRecord["title"] = title
         boardRecord["owner"] = CKRecord.Reference(recordID: CKRecord.ID(recordName: ownerNickname), action: .none)
+        boardRecord["isAcceptingMembers"] = NSNumber(value: true)
+        boardRecord["boardCreationDate"] = Date()
         
         if let asset = imageAsset {
             boardRecord["image"] = asset
@@ -102,10 +100,9 @@ class BoardManager {
         }
     }
     
-    // Converts UIImage to CKAsset by writing to a temporary file
     func createImageAsset(from image: UIImage) -> CKAsset? {
         guard let data = image.jpegData(compressionQuality: 0.7) else { return nil }
-        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(NSUUID().uuidString + ".jpg")
+        let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".jpg")
         
         do {
             try data.write(to: fileURL)
@@ -117,7 +114,13 @@ class BoardManager {
         }
     }
     
-    
+    func deleteTemporaryFile(at fileURL: URL) {
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+        } catch {
+            print("Error deleting temporary file: \(error)")
+        }
+    }
     
     func fetchBoards(completion: @escaping (Result<[(CKRecord, UIImage?)], Error>) -> Void) {
         UserProfileManager.shared.fetchUserProfile { result in
@@ -135,7 +138,6 @@ class BoardManager {
                         if let error = error {
                             completion(.failure(error))
                         } else if let records = records, !records.isEmpty {
-                            // Map records to include images
                             let boardsWithImages = records.compactMap { record -> (CKRecord, UIImage?)? in
                                 let imageAsset = record["image"] as? CKAsset
                                 var image: UIImage? = nil
@@ -155,7 +157,6 @@ class BoardManager {
             }
         }
     }
-    
     
     func fetchBoardsForCurrentUser(completion: @escaping (Result<[(CKRecord, UIImage?)], Error>) -> Void) {
         UserProfileManager.shared.fetchUserProfile { result in
@@ -193,61 +194,59 @@ class BoardManager {
         }
     }
     
-    
     func fetchBoardByBoardID(_ boardID: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-          let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
-          let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
-          let query = CKQuery(recordType: "Board", predicate: predicate)
-          
-          publicDatabase.perform(query, inZoneWith: nil) { records, error in
-              DispatchQueue.main.async {
-                  if let error = error {
-                      completion(.failure(error))
-                  } else if let records = records, !records.isEmpty {
-                      completion(.success(records.first!))
-                  } else {
-                      completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
-                  }
-              }
-          }
-      }
-      
-      func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
-          let boardRecordID = CKRecord.ID(recordName: boardID)
-          publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in
-              guard let self = self, let boardRecord = record else {
-                  completion(.failure(error ?? NSError(domain: "BoardManagerError", code: 1008, userInfo: [NSLocalizedDescriptionKey: "Unable to fetch board"])))
-                  return
-              }
-              
-              if let ownerRef = boardRecord["owner"] as? CKRecord.Reference, ownerRef.recordID.recordName == memberNickname {
-                  completion(.success(()))
-                  return
-              }
-              
-              let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: memberNickname), action: .none)
-              var members = boardRecord["members"] as? [CKRecord.Reference] ?? []
-              
-              if !members.contains(where: { $0.recordID.recordName == memberNickname }) {
-                  members.append(memberReference)
-                  boardRecord["members"] = members
-                  
-                  let modifyOperation = CKModifyRecordsOperation(recordsToSave: [boardRecord], recordIDsToDelete: nil)
-                  modifyOperation.savePolicy = .changedKeys
-                  modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
-                      if let error = error {
-                          completion(.failure(error))
-                      } else {
-                          completion(.success(()))
-                      }
-                  }
-                  self.publicDatabase.add(modifyOperation)
-              } else {
-                  completion(.success(()))
-              }
-          }
-      }
+        let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
+        let query = CKQuery(recordType: "Board", predicate: predicate)
+        
+        publicDatabase.perform(query, inZoneWith: nil) { records, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                } else if let records = records, !records.isEmpty {
+                    completion(.success(records.first!))
+                } else {
+                    completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
+                }
+            }
+        }
+    }
     
+    func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let boardRecordID = CKRecord.ID(recordName: boardID)
+        publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in
+            guard let self = self, let boardRecord = record else {
+                completion(.failure(error ?? NSError(domain: "BoardManagerError", code: 1008, userInfo: [NSLocalizedDescriptionKey: "Unable to fetch board"])))
+                return
+            }
+            
+            if let ownerRef = boardRecord["owner"] as? CKRecord.Reference, ownerRef.recordID.recordName == memberNickname {
+                completion(.success(()))
+                return
+            }
+            
+            let memberReference = CKRecord.Reference(recordID: CKRecord.ID(recordName: memberNickname), action: .none)
+            var members = boardRecord["members"] as? [CKRecord.Reference] ?? []
+            
+            if !members.contains(where: { $0.recordID.recordName == memberNickname }) {
+                members.append(memberReference)
+                boardRecord["members"] = members
+                
+                let modifyOperation = CKModifyRecordsOperation(recordsToSave: [boardRecord], recordIDsToDelete: nil)
+                modifyOperation.savePolicy = .changedKeys
+                modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        completion(.success(()))
+                    }
+                }
+                self.publicDatabase.add(modifyOperation)
+            } else {
+                completion(.success(()))
+            }
+        }
+    }
     
     func handleBoardDeletion(boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         fetchBoardByBoardID(boardID) { [weak self] result in
@@ -293,25 +292,53 @@ class BoardManager {
         }
     }
     
-    func fetchBoardByBoardIDAsync(_ boardID: String) async throws -> CKRecord {
-           return try await withCheckedThrowingContinuation { continuation in
-               fetchBoardByBoardID(boardID) { result in
-                   switch result {
-                   case .success(let record):
-                       continuation.resume(returning: record)
-                   case .failure(let error):
-                       continuation.resume(throwing: error)
-                   }
-               }
-           }
-       }
+    func updateBoardAcceptance(boardID: String, isAcceptingMembers: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
+        fetchBoardByBoardID(boardID) { [weak self] result in
+            switch result {
+            case .success(let board):
+                board["isAcceptingMembers"] = NSNumber(value: isAcceptingMembers ? 1 : 0)
+                self?.publicDatabase.save(board) { _, error in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                        } else {
+                            completion(.success(()))
+                        }
+                    }
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchBoardAcceptance(boardID: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        fetchBoardByBoardID(boardID) { result in
+            switch result {
+            case .success(let board):
+                if let isAccepting = board["isAcceptingMembers"] as? NSNumber, isAccepting.intValue == 1 {
+                    completion(.success(true))
+                } else {
+                    completion(.success(false))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func timeRemaining(from creationDate: Date) -> TimeInterval {
+        let now = Date()
+        let timeElapsed = now.timeIntervalSince(creationDate)
+        let timeRemaining = (24 * 60 * 60) - timeElapsed
+        return max(timeRemaining, 0)
+    }
     
     func saveStickyNote(_ stickyNote: StickyNote, boardID: String, completion: @escaping (Result<StickyNote, Error>) -> Void) {
-           StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: boardID, completion: completion)
-       }
-       
-       func fetchStickyNotes(forBoardID boardID: String, completion: @escaping (Result<[StickyNote], Error>) -> Void) {
-           StickyNoteManager.shared.fetchStickyNotes(forBoardID: boardID, completion: completion)
-       }
+        StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: boardID, completion: completion)
+    }
     
+    func fetchStickyNotes(forBoardID boardID: String, completion: @escaping (Result<[StickyNote], Error>) -> Void) {
+        StickyNoteManager.shared.fetchStickyNotes(forBoardID: boardID, completion: completion)
+    }
 }

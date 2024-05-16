@@ -43,7 +43,7 @@ struct MembersListView: View {
             .cornerRadius(8.0)
             
         }
-        .frame(width: 200, height: 200)
+        .frame(width: 150, height: 200)
         .border(Color.gray.opacity(0.2))
         .cornerRadius(8)
         

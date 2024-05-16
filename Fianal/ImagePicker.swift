@@ -38,3 +38,21 @@ struct ImagePicker: UIViewControllerRepresentable {
     
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 }
+
+class ImageSaver: NSObject {
+    var onSuccess: (() -> Void)?
+    var onError: ((Error) -> Void)?
+
+    init(onSuccess: (() -> Void)? = nil, onError: ((Error) -> Void)? = nil) {
+        self.onSuccess = onSuccess
+        self.onError = onError
+    }
+
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            onError?(error)
+        } else {
+            onSuccess?()
+        }
+    }
+}

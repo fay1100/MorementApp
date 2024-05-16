@@ -23,51 +23,70 @@ struct BoardView: View {
     @State private var selectedImage: UIImage?
     @State private var stickerToDelete: Sticker? = nil
     @State private var imageToDelete: BoardImage? = nil
+    @State private var creationDate: Date? = nil
+    @State private var timeRemaining: TimeInterval = 0
+    @State private var timer: Timer? = nil
+    @State private var isTimeUp = false
+    @State private var showSaveAlert = false
 
+    
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 Color("GrayLight")
                     .ignoresSafeArea()
                     .gesture(TapGesture().onEnded {
-                        selectedStickyNoteID = nil
-                        stickerToDelete = nil
-                        imageToDelete = nil
-                    })
-
-                displayBoardImages()  // Display board images first
-                
-                ForEach(stickyNotes) { stickyNote in
-                    StickyNoteView(stickyNote: stickyNote)
-                        .gesture(TapGesture().onEnded {
-                            selectedStickyNoteID = stickyNote.id  // Select the sticky note on tap
-                            selectedStickerID = nil  // Deselect any sticker
+                        if !isTimeUp {
+                            selectedStickyNoteID = nil
                             stickerToDelete = nil
                             imageToDelete = nil
-                        })
-                        .gesture(DragGesture()
-                            .onChanged { value in
-                                var updatedNote = stickyNote
-                                updatedNote.position = value.location
-                                updateStickyNote(updatedNote)
-                            }
-                        )
-                        .gesture(MagnificationGesture()
-                            .onChanged { value in
-                                var updatedNote = stickyNote
-                                let minScale: CGFloat = 0.5  // Minimum scale
-                                updatedNote.scale = max(value, minScale)  // Update the scale with a minimum limit
-                                updateStickyNote(updatedNote)
-                            }
-                        )
+                        }
+                    })
+
+                
+                ForEach(stickyNotes) { stickyNote in
+                    if !isTimeUp {
+                        StickyNoteView(stickyNote: stickyNote)
+                            .gesture(TapGesture().onEnded {
+                                selectedStickyNoteID = stickyNote.id  // Select the sticky note on tap
+                                selectedStickerID = nil  // Deselect any sticker
+                                stickerToDelete = nil
+                                imageToDelete = nil
+                            })
+                            .gesture(DragGesture()
+                                .onChanged { value in
+                                    var updatedNote = stickyNote
+                                    updatedNote.position = value.location
+                                    updateStickyNote(updatedNote)
+                                }
+                            )
+                            .gesture(MagnificationGesture()
+                                .onChanged { value in
+                                    var updatedNote = stickyNote
+                                    let minScale: CGFloat = 0.5  // Minimum scale
+                                    updatedNote.scale = max(value, minScale)  // Update the scale with a minimum limit
+                                    updateStickyNote(updatedNote)
+                                }
+                            )
+                    } else {
+                        StickyNoteView(stickyNote: stickyNote)
+                            .disabled(true)
+                    }
                 }
+                
                 displayBoardImages()  // Display board images first
 
                 
                 ForEach($stickers) { $sticker in
-                    displaySticker(sticker: $sticker)  // Display stickers last
+                    if !isTimeUp {
+                        displaySticker(sticker: $sticker)  // Display stickers last
+                    } else {
+                        displaySticker(sticker: $sticker)
+                            .disabled(true)
+                    }
                 }
-
+                
                 displayStickerGridView()
                 
                 if let stickerToDelete = stickerToDelete {
@@ -99,21 +118,98 @@ struct BoardView: View {
                     }
                     .position(imageToDelete.position)
                 }
+                
+                VStack {
+                    Text("⌛️ \(formattedTimeRemaining())")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.white.opacity(0.3))                      .cornerRadius(10)
+                        .padding(.top, 10)
+                    Spacer()
+                }
             }
 
             .onAppear(perform: setupView)
             .navigationBarTitle(title, displayMode: .inline)
             .navigationBarItems(leading: backButton(), trailing: trailingButtons())
-            .toolbar { toolbarItems() }
+            .toolbar { if !isTimeUp { toolbarItems() } }
             .overlay(popoverOverlay(), alignment: .center)
             .overlay(membersListOverlay())
             .sheet(isPresented: $isImagePickerPresented, onDismiss: loadSelectedImage) {
                 ImagePicker(selectedImage: $selectedImage, sourceType: .photoLibrary)
             }
-
+            .alert(isPresented: $showSaveAlert) {
+                Alert(title: Text("Success"), message: Text("Board image saved to Photo Album"), dismissButton: .default(Text("OK")))
+            }
+            
+            if isTimeUp {
+                VStack {
+                    Button(action: {
+                        exportBoardAsImage()
+                    }) {
+                        Text("Export")
+                            .font(.body)
+                            .padding()
+                            .background(Color("MainColor"))
+                            .foregroundColor(Color("GrayLight")
+)
+                            .cornerRadius(10)
+                    }
+                    .padding()
+                }
+            }
         }
     }
     
+    private func formattedTimeRemaining() -> String {
+        let hours = Int(timeRemaining) / 3600
+        let minutes = (Int(timeRemaining) % 3600) / 60
+        let seconds = Int(timeRemaining) % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
+    private func setupView() {
+        loadMembers()
+        loadStickyNotes()
+        loadBoardImages()
+        fetchStickers()
+        fetchCreationDate()
+        startTimer()
+    }
+    
+    private func fetchCreationDate() {
+        BoardManager.shared.fetchBoardByBoardID(boardID) { result in
+            switch result {
+            case .success(let board):
+                if let creationDate = board["boardCreationDate"] as? Date { // Change to boardCreationDate
+                    self.creationDate = creationDate
+                    self.timeRemaining = self.timeRemaining(from: creationDate)
+                }
+            case .failure(let error):
+                print("Failed to fetch creation date: \(error)")
+            }
+        }
+    }
+    
+    private func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            guard let creationDate = self.creationDate else { return }
+            self.timeRemaining = self.timeRemaining(from: creationDate)
+            if self.timeRemaining == 0 {
+                self.isTimeUp = true
+                self.timer?.invalidate() // Stop the timer
+            }
+        }
+    }
+
+    private func timeRemaining(from creationDate: Date) -> TimeInterval {
+        let now = Date()
+        let timeElapsed = now.timeIntervalSince(creationDate)
+        let timeRemaining = (60) - timeElapsed // 3 minutes in seconds
+        return max(timeRemaining, 0) // Ensure it doesn't go below 0
+    }
+
     private func displaySticker(sticker: Binding<Sticker>) -> some View {
         ZStack {
             Image(uiImage: sticker.wrappedValue.image)
@@ -166,13 +262,6 @@ struct BoardView: View {
                 }, showStickers: $showStickers)
             }
         }
-    }
-    
-    private func setupView() {
-        loadMembers()
-        loadStickyNotes()
-        loadBoardImages()
-        fetchStickers()
     }
     
     private func backButton() -> some View {
@@ -533,7 +622,63 @@ struct BoardView: View {
             }
         }
     }
+    
+    private func exportBoardAsImage() {
+        let image = takeScreenshotOfBoardContents()
+        saveImageToPhotos(image)
+    }
+
+    private func takeScreenshotOfBoardContents() -> UIImage {
+        let hostingController = UIHostingController(rootView: boardContentsView())
+        let view = hostingController.view
+        let targetSize = hostingController.sizeThatFits(in: UIScreen.main.bounds.size)
+        view?.bounds = CGRect(origin: .zero, size: targetSize)
+        view?.backgroundColor = .clear
+
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        return renderer.image { context in
+            view?.drawHierarchy(in: view?.bounds ?? CGRect.zero, afterScreenUpdates: true)
+        }
+    }
+
+    private func boardContentsView() -> some View {
+        ZStack {
+            ForEach(boardImages) { boardImage in
+                Image(uiImage: boardImage.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: boardImage.frameSize.width, height: boardImage.frameSize.height)
+                    .clipped()
+                    .position(boardImage.position)
+            }
+
+            ForEach(stickyNotes) { stickyNote in
+                StickyNoteView(stickyNote: stickyNote)
+                    .position(stickyNote.position)
+                    .scaleEffect(stickyNote.scale)
+            }
+
+            ForEach(stickers) { sticker in
+                Image(uiImage: sticker.image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(sticker.scale)
+                    .frame(width: 150 * sticker.scale, height: 150 * sticker.scale)
+                    .position(sticker.position)
+            }
+        }
+    }
+
+    private func saveImageToPhotos(_ image: UIImage) {
+        let imageSaver = ImageSaver(onSuccess: {
+            showSaveAlert = true
+        }, onError: { error in
+            errorMessage = "Failed to save image: \(error.localizedDescription)"
+        })
+        UIImageWriteToSavedPhotosAlbum(image, imageSaver, #selector(ImageSaver.image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
 }
+
 
 struct BoardView_Previews: PreviewProvider {
     static var previews: some View {

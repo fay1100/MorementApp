@@ -1,3 +1,6 @@
+import Foundation
+import UIKit
+import CloudKit
 import SwiftUI
 
 extension Color {
@@ -29,11 +32,6 @@ extension Color {
         self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255, opacity: Double(a) / 255)
     }
 }
-
-import Foundation
-import UIKit
-import CloudKit
-import SwiftUI
 
 class StickyNoteManager {
     static let shared = StickyNoteManager()
@@ -85,7 +83,7 @@ class StickyNoteManager {
         
         let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
         modifyOperation.savePolicy = .ifServerRecordUnchanged
-        modifyOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, error in
+        modifyOperation.modifyRecordsCompletionBlock = { [weak self] savedRecords, deletedRecordIDs, error in
             DispatchQueue.main.async {
                 if let savedRecord = savedRecords?.first {
                     let savedNote = StickyNote(
@@ -100,9 +98,9 @@ class StickyNoteManager {
                     completion(.success(savedNote))
                 } else if let error = error {
                     if let ckError = error as? CKError, ckError.code == .serverRecordChanged {
-                        self.publicDatabase.fetch(withRecordID: record.recordID) { fetchedRecord, fetchError in
+                        self?.publicDatabase.fetch(withRecordID: record.recordID) { fetchedRecord, fetchError in
                             if let fetchedRecord = fetchedRecord {
-                                self.updateStickyNoteRecord(fetchedRecord, with: stickyNote, boardID: boardID, completion: completion)
+                                self?.updateStickyNoteRecord(fetchedRecord, with: stickyNote, boardID: boardID, completion: completion)
                             } else if let fetchError = fetchError {
                                 completion(.failure(fetchError))
                             }

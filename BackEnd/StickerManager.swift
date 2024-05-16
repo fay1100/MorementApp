@@ -50,7 +50,7 @@ class StickerManager {
         
         let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
         modifyOperation.savePolicy = .ifServerRecordUnchanged
-        modifyOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, error in
+        modifyOperation.modifyRecordsCompletionBlock = { [weak self] savedRecords, deletedRecordIDs, error in
             DispatchQueue.main.async {
                 if let savedRecord = savedRecords?.first {
                     var savedSticker = sticker
@@ -58,9 +58,9 @@ class StickerManager {
                     completion(.success(savedSticker))
                 } else if let error = error {
                     if let ckError = error as? CKError, ckError.code == .serverRecordChanged {
-                        self.publicDatabase.fetch(withRecordID: record.recordID) { fetchedRecord, fetchError in
+                        self?.publicDatabase.fetch(withRecordID: record.recordID) { fetchedRecord, fetchError in
                             if let fetchedRecord = fetchedRecord {
-                                self.updateStickerRecord(fetchedRecord, with: sticker, boardID: boardID, completion: completion)
+                                self?.updateStickerRecord(fetchedRecord, with: sticker, boardID: boardID, completion: completion)
                             } else if let fetchError = fetchError {
                                 completion(.failure(fetchError))
                             }
@@ -86,7 +86,7 @@ class StickerManager {
         let predicate = NSPredicate(format: "boardID == %@", CKRecord.Reference(recordID: CKRecord.ID(recordName: boardID), action: .none))
         let query = CKQuery(recordType: "Sticker", predicate: predicate)
         
-        publicDatabase.perform(query, inZoneWith: nil) { records, error in
+        publicDatabase.perform(query, inZoneWith: nil) { [weak self] records, error in
             DispatchQueue.main.async {
                 if let error = error {
                     completion(.failure(error))
@@ -94,7 +94,7 @@ class StickerManager {
                     let stickers = records.map { record in
                         Sticker(
                             id: UUID(),  // Generate a new UUID
-                            image: self.loadImage(from: record["image"] as? CKAsset),
+                            image: self?.loadImage(from: record["image"] as? CKAsset) ?? UIImage(),
                             position: CGPoint(x: record["positionX"] as? Double ?? 0.0, y: record["positionY"] as? Double ?? 0.0),
                             scale: CGFloat(record["scale"] as? Double ?? 1.0),
                             recordID: record.recordID

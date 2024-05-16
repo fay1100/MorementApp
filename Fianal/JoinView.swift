@@ -77,22 +77,37 @@ struct JoinBoardView: View {
         joinError = nil
         BoardManager.shared.fetchBoardByBoardID(cleanBoardID) { [self] result in
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // Adding a slight delay
-                isJoining = false
                 switch result {
                 case .success(let boardRecord):
                     boardTitle = boardRecord["title"] as? String ?? "Unknown"
                     ownerNickname = (boardRecord["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
-                    proceedToAddMember(boardRecord: boardRecord)
+                    BoardManager.shared.fetchBoardAcceptance(boardID: cleanBoardID) { acceptanceResult in
+                        switch acceptanceResult {
+                        case .success(let isAcceptingMembers):
+                            if isAcceptingMembers {
+                                proceedToAddMember(boardRecord: boardRecord)
+                            } else {
+                                isJoining = false
+                                joinError = "This board is not accepting new members."
+                            }
+                        case .failure(let error):
+                            isJoining = false
+                            joinError = "Failed to check board acceptance status: \(error.localizedDescription)"
+                        }
+                    }
                 case .failure(let error):
+                    isJoining = false
                     joinError = "Failed to join the board: \(error.localizedDescription)"
                 }
             }
         }
     }
 
+
     private func proceedToAddMember(boardRecord: CKRecord) {
         BoardManager.shared.addMemberToBoard(memberNickname: nickname, boardID: boardRecord.recordID.recordName) { [self] addMemberResult in
             DispatchQueue.main.async {
+                isJoining = false
                 switch addMemberResult {
                 case .success():
                     navigateToBoard = true

@@ -65,6 +65,18 @@ struct DetailsView: View {
                 Text("Accepting responses")
             }
             .padding()
+            .onChange(of: isAcceptingResponses) { newValue in
+                BoardManager.shared.updateBoardAcceptance(boardID: boardID, isAcceptingMembers: newValue) { result in
+                    switch result {
+                    case .success():
+                        print("Board acceptance status updated successfully.")
+                        print("Board is now \(newValue ? "accepting" : "not accepting") members.")
+                    case .failure(let error):
+                        print("Failed to update board acceptance status: \(error.localizedDescription)")
+                    }
+                }
+            }
+            .accentColor(isAcceptingResponses ? .green : .gray) // Change color based on the state
 
             Spacer()
         }
@@ -73,6 +85,21 @@ struct DetailsView: View {
         .cornerRadius(16)
         .sheet(isPresented: $showingShareSheet) {
             ActivityView(activityItems: ["Join the board to keep your moments alive forever 🥳\n\(boardID)"])
+        }
+        .onAppear {
+            fetchBoardAcceptanceStatus()
+        }
+    }
+
+    private func fetchBoardAcceptanceStatus() {
+        BoardManager.shared.fetchBoardAcceptance(boardID: boardID) { result in
+            switch result {
+            case .success(let isAcceptingMembers):
+                isAcceptingResponses = isAcceptingMembers
+                print("Board is currently \(isAcceptingMembers ? "accepting" : "not accepting") members.")
+            case .failure(let error):
+                print("Failed to fetch board acceptance status: \(error.localizedDescription)")
+            }
         }
     }
 }

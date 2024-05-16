@@ -11,11 +11,14 @@ import SwiftUI
 struct FianalApp: App {
     @State private var inputImage: UIImage? = nil
     @State private var stickerImageName: String = "defaultImageName"  // Default image name for stickers
-
+    init() {
+          NotificationManager.shared.requestNotificationPermission()
+      }
     var body: some Scene {
         WindowGroup {
             SplashScreen()
         }
     }
+    
 }
  
