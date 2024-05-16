@@ -22,6 +22,7 @@ struct BoardView: View {
     @State private var isImagePickerPresented = false
     @State private var selectedImage: UIImage?
     @State private var stickerToDelete: Sticker? = nil
+    @State private var imageToDelete: BoardImage? = nil
 
     var body: some View {
         NavigationStack {
@@ -31,7 +32,10 @@ struct BoardView: View {
                     .gesture(TapGesture().onEnded {
                         selectedStickyNoteID = nil
                         stickerToDelete = nil
+                        imageToDelete = nil
                     })
+
+                displayBoardImages()  // Display board images first
                 
                 ForEach(stickyNotes) { stickyNote in
                     StickyNoteView(stickyNote: stickyNote)
@@ -39,6 +43,7 @@ struct BoardView: View {
                             selectedStickyNoteID = stickyNote.id  // Select the sticky note on tap
                             selectedStickerID = nil  // Deselect any sticker
                             stickerToDelete = nil
+                            imageToDelete = nil
                         })
                         .gesture(DragGesture()
                             .onChanged { value in
@@ -56,13 +61,13 @@ struct BoardView: View {
                             }
                         )
                 }
+                displayBoardImages()  // Display board images first
+
+                
                 ForEach($stickers) { $sticker in
-                    displaySticker(sticker: $sticker)
+                    displaySticker(sticker: $sticker)  // Display stickers last
                 }
- 
-                
-                displayBoardImages()  // Display board images separately
-                
+
                 displayStickerGridView()
                 
                 if let stickerToDelete = stickerToDelete {
@@ -72,7 +77,6 @@ struct BoardView: View {
                             .padding()
                             .background(Color.white.opacity(0.5))  // Adjust opacity to 0.7
                             .clipShape(Circle())
-
                             .onTapGesture {
                                 deleteSticker(stickerToDelete)
                                 self.stickerToDelete = nil  // Hide the delete icon after deletion
@@ -80,7 +84,23 @@ struct BoardView: View {
                     }
                     .position(stickerToDelete.position)
                 }
+                
+                if let imageToDelete = imageToDelete {
+                    VStack {
+                        Text("🗑️")
+                            .font(.largeTitle)
+                            .padding()
+                            .background(Color.white.opacity(0.5))  // Adjust opacity to 0.7
+                            .clipShape(Circle())
+                            .onTapGesture {
+                                deleteBoardImage(imageToDelete)
+                                self.imageToDelete = nil  // Hide the delete icon after deletion
+                            }
+                    }
+                    .position(imageToDelete.position)
+                }
             }
+
             .onAppear(perform: setupView)
             .navigationBarTitle(title, displayMode: .inline)
             .navigationBarItems(leading: backButton(), trailing: trailingButtons())
@@ -108,10 +128,12 @@ struct BoardView: View {
                     selectedStickerID = sticker.wrappedValue.id
                     selectedStickyNoteID = nil
                     stickerToDelete = nil  // إخفاء أيقونة الحذف عند النقر على الملصق
+                    imageToDelete = nil
                 })
                 .gesture(LongPressGesture()
                     .onEnded { _ in
                         stickerToDelete = sticker.wrappedValue
+                        imageToDelete = nil
                     }
                 )
                 .gesture(DragGesture()
@@ -124,7 +146,9 @@ struct BoardView: View {
                 )
                 .gesture(MagnificationGesture()
                     .onChanged { value in
-                        sticker.wrappedValue.scale = value
+                        let minScale: CGFloat = 0.50  // الحد الأدنى للحجم
+                        let maxScale: CGFloat = 2.0  // الحد الأقصى للحجم
+                        sticker.wrappedValue.scale = min(max(value, minScale), maxScale)  // تقييد الحجم بين الحد الأدنى والأقصى
                     }
                     .onEnded { _ in
                         saveStickerPosition(sticker.wrappedValue)
@@ -231,44 +255,54 @@ struct BoardView: View {
     }
     
     private func displayBoardImages() -> some View {
-        ForEach($boardImages) { $boardImage in
+        ForEach(boardImages.indices, id: \.self) { index in
+            let boardImage = $boardImages[index]
             ZStack {
                 GeometryReader { geometry in
-                    Image(uiImage: boardImage.image)
+                    Image(uiImage: boardImage.image.wrappedValue)
                         .resizable()
                         .scaledToFill()  // استخدام scaledToFill لضبط الصورة لتغطية الإطار
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .frame(width: boardImage.frameSize.wrappedValue.width, height: boardImage.frameSize.wrappedValue.height)
                         .clipped()  // قص الصورة لتناسب الإطار
                         .cornerRadius(10)
+                        .gesture(TapGesture().onEnded {
+                            imageToDelete = boardImage.wrappedValue
+                            stickerToDelete = nil
+                        })
                         .gesture(DragGesture()
                             .onChanged { value in
-                                boardImage.position = value.location
+                                // احسب الموضع الجديد بالنسبة لموضع البداية
+                                let newX = boardImage.position.wrappedValue.x + value.translation.width
+                                let newY = boardImage.position.wrappedValue.y + value.translation.height
+                                let newLocation = CGPoint(x: newX, y: newY)
+                                boardImage.position.wrappedValue = newLocation
                             }
-                            .onEnded { _ in
-                                saveBoardImagePosition(boardImage)
+                            .onEnded { value in
+                                saveBoardImagePosition(boardImage.wrappedValue)
                             }
                         )
                         .gesture(MagnificationGesture()
                             .onChanged { value in
                                 let minFrameSize: CGFloat = 150  // تحديد الحد الأدنى للحجم
                                 let maxFrameSize: CGFloat = 400  // تحديد الحد الأقصى للحجم
-                                let newSize = boardImage.frameSize.width * value
-                                boardImage.frameSize = CGSize(
+                                let newSize = boardImage.frameSize.wrappedValue.width * value
+                                boardImage.frameSize.wrappedValue = CGSize(
                                     width: min(max(newSize, minFrameSize), maxFrameSize),
                                     height: min(max(newSize, minFrameSize), maxFrameSize)
                                 )
                             }
                             .onEnded { _ in
-                                saveBoardImageSize(boardImage)
+                                saveBoardImageSize(boardImage.wrappedValue)
                             }
                         )
                         .zIndex(1)
                 }
-                .frame(width: boardImage.frameSize.width, height: boardImage.frameSize.height)
-                .position(boardImage.position)
+                .frame(width: boardImage.frameSize.wrappedValue.width, height: boardImage.frameSize.wrappedValue.height)
+                .position(boardImage.position.wrappedValue)
             }
         }
     }
+
 
     private func saveBoardImagePosition(_ boardImage: BoardImage) {
         BoardImageManager.shared.saveBoardImageBatch(boardImage, boardID: boardID) { result in
@@ -302,26 +336,29 @@ struct BoardView: View {
         var newSticker = sticker
         let randomX = CGFloat.random(in: 50...300)
         let randomY = CGFloat.random(in: 100...600)
+        let initialScale: CGFloat = 0.90 // تعيين الحجم الابتدائي للستيكر
         newSticker.position = CGPoint(x: randomX, y: randomY)
+        newSticker.scale = initialScale
         
         DispatchQueue.main.async {
             self.stickers.append(newSticker)
             self.showStickers = false
         }
         
-        // Save the new sticker to CloudKit
+        // حفظ الستيكر الجديد في CloudKit
         StickerManager.shared.saveStickerBatch(newSticker, boardID: boardID) { result in
             switch result {
             case .success(let savedSticker):
                 print("Sticker saved successfully: \(savedSticker)")
                 if let index = stickers.firstIndex(where: { $0.id == newSticker.id }) {
-                    stickers[index] = savedSticker  // Update the local sticker with the saved recordID
+                    stickers[index] = savedSticker  // تحديث الستيكر المحلي مع recordID المحفوظ
                 }
             case .failure(let error):
                 print("Failed to save sticker: \(error)")
             }
         }
     }
+
 
     private func addStickyNoteToBoard() {
         let randomX = CGFloat.random(in: 50...300)  // تحديد نطاق للإحداثيات العشوائية X
@@ -394,6 +431,21 @@ struct BoardView: View {
             }
         }
     }
+    
+    private func deleteBoardImage(_ boardImage: BoardImage) {
+        BoardImageManager.shared.deleteBoardImage(boardImage) { result in
+            switch result {
+            case .success():
+                if let index = boardImages.firstIndex(where: { $0.id == boardImage.id }) {
+                    boardImages.remove(at: index)
+                }
+                self.imageToDelete = nil  // Hide the delete icon after deletion
+            case .failure(let error):
+                print("Failed to delete board image: \(error)")
+            }
+        }
+    }
+
 
     private func loadMembers() {
         isLoading = true

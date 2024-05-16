@@ -71,10 +71,9 @@ struct DetailsView: View {
         .frame(width: 290, height: 280)
         .background(Color.white)
         .cornerRadius(16)
-        // Uncomment the sheet if you want to implement the sharing functionality
-        //.sheet(isPresented: $showingShareSheet) {
-        //    ActivityView(activityItems: ["Friends Gathering: \(boardID)"])
-        //}
+        .sheet(isPresented: $showingShareSheet) {
+            ActivityView(activityItems: ["Join the board to keep your moments alive forever 🥳\n\(boardID)"])
+        }
     }
 }
 

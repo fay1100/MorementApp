@@ -7,8 +7,7 @@ struct StickerGridView: View {
 
     let stickers: [String] = [
         "Stiker1", "Stiker2", "Stiker3", "Stiker4", "Stiker5", "Stiker6",
-        "Stiker7", "Stiker8", "Stiker9", "Stiker10",
-        "Stiker11", "Stiker12", "Stiker13", "Stiker14", "Stiker15"
+        "Stiker7", "Stiker8", "Stiker9","Stiker10", "Stiker12", "Stiker13", "Stiker14","Stiker15","Stiker16", "Stiker17","Stiker18","Stiker19","Stiker20","Stiker21","Stiker22","Stiker23","Stiker24","Stiker25","Stiker26","Stiker27","Stiker28","Stiker29","Stiker30","Stiker31","Stiker32","Stiker33","Stiker34","Stiker35",
     ]
 
     var body: some View {
