@@ -31,9 +31,9 @@ struct StickerGridView: View {
                     }
                 }
                 .padding()
-            }
+            }.background(Color.white)
             .navigationTitle("Stickers")
-        }.background(Color.white)
+        }
     }
 }
 
@@ -65,9 +65,4 @@ struct Sticker: Identifiable {
 
 
 
-struct BoardImage: Identifiable {
-    var id = UUID()
-    var image: UIImage
-    var position: CGPoint
-    var scale: CGFloat
-}
+

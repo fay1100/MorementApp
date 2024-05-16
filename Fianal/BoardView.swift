@@ -87,6 +87,10 @@ struct BoardView: View {
             .toolbar { toolbarItems() }
             .overlay(popoverOverlay(), alignment: .center)
             .overlay(membersListOverlay())
+            .sheet(isPresented: $isImagePickerPresented, onDismiss: loadSelectedImage) {
+                ImagePicker(selectedImage: $selectedImage, sourceType: .photoLibrary)
+            }
+
         }
     }
     
@@ -97,12 +101,13 @@ struct BoardView: View {
                 .scaledToFit()
                 .scaleEffect(sticker.wrappedValue.scale)
                 .frame(width: 150 * sticker.wrappedValue.scale, height: 150 * sticker.wrappedValue.scale)
+                .background(Color.clear)  // لضمان عدم وجود خلفية
                 .cornerRadius(15)
                 .position(sticker.wrappedValue.position)
                 .gesture(TapGesture().onEnded {
                     selectedStickerID = sticker.wrappedValue.id
                     selectedStickyNoteID = nil
-                    stickerToDelete = nil  // Hide the delete icon if tapping on a sticker
+                    stickerToDelete = nil  // إخفاء أيقونة الحذف عند النقر على الملصق
                 })
                 .gesture(LongPressGesture()
                     .onEnded { _ in
@@ -125,7 +130,7 @@ struct BoardView: View {
                         saveStickerPosition(sticker.wrappedValue)
                     }
                 )
-                .zIndex(1)  // This ensures the sticker appears above other elements
+                .zIndex(1)  // لضمان ظهور الملصق فوق العناصر الأخرى
         }
     }
 
@@ -195,7 +200,7 @@ struct BoardView: View {
                     }
                 )
             } else {
-                ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard)
+                ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard, isImagePickerPresented: $isImagePickerPresented)
             }
         }
     }
@@ -228,28 +233,71 @@ struct BoardView: View {
     private func displayBoardImages() -> some View {
         ForEach($boardImages) { $boardImage in
             ZStack {
-                Image(uiImage: boardImage.image)
-                    .resizable()
-                    .scaledToFit()
-                    .scaleEffect(boardImage.scale)
-                    .frame(width: 150 * boardImage.scale, height: 150 * boardImage.scale)
-                    .cornerRadius(15)
-                    .position(boardImage.position)
-                    .gesture(DragGesture()
-                        .onChanged { value in
-                            boardImage.position = value.location
-                        }
-                    )
-                    .gesture(MagnificationGesture()
-                        .onChanged { value in
-                            let minScale: CGFloat = 0.5
-                            boardImage.scale = max(value, minScale)
-                        }
-                    )
+                GeometryReader { geometry in
+                    Image(uiImage: boardImage.image)
+                        .resizable()
+                        .scaledToFill()  // استخدام scaledToFill لضبط الصورة لتغطية الإطار
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()  // قص الصورة لتناسب الإطار
+                        .cornerRadius(10)
+                        .gesture(DragGesture()
+                            .onChanged { value in
+                                boardImage.position = value.location
+                            }
+                            .onEnded { _ in
+                                saveBoardImagePosition(boardImage)
+                            }
+                        )
+                        .gesture(MagnificationGesture()
+                            .onChanged { value in
+                                let minFrameSize: CGFloat = 150  // تحديد الحد الأدنى للحجم
+                                let maxFrameSize: CGFloat = 400  // تحديد الحد الأقصى للحجم
+                                let newSize = boardImage.frameSize.width * value
+                                boardImage.frameSize = CGSize(
+                                    width: min(max(newSize, minFrameSize), maxFrameSize),
+                                    height: min(max(newSize, minFrameSize), maxFrameSize)
+                                )
+                            }
+                            .onEnded { _ in
+                                saveBoardImageSize(boardImage)
+                            }
+                        )
+                        .zIndex(1)
+                }
+                .frame(width: boardImage.frameSize.width, height: boardImage.frameSize.height)
+                .position(boardImage.position)
             }
         }
     }
-    
+
+    private func saveBoardImagePosition(_ boardImage: BoardImage) {
+        BoardImageManager.shared.saveBoardImageBatch(boardImage, boardID: boardID) { result in
+            switch result {
+            case .success(let savedImage):
+                print("Board image position saved successfully: \(savedImage)")
+                if let index = boardImages.firstIndex(where: { $0.id == savedImage.id }) {
+                    boardImages[index] = savedImage  // Update the local board image with the saved recordID
+                }
+            case .failure(let error):
+                print("Failed to save board image position: \(error)")
+            }
+        }
+    }
+
+    private func saveBoardImageSize(_ boardImage: BoardImage) {
+        BoardImageManager.shared.saveBoardImageBatch(boardImage, boardID: boardID) { result in
+            switch result {
+            case .success(let savedImage):
+                print("Board image size saved successfully: \(savedImage)")
+                if let index = boardImages.firstIndex(where: { $0.id == savedImage.id }) {
+                    boardImages[index] = savedImage  // Update the local board image with the saved recordID
+                }
+            case .failure(let error):
+                print("Failed to save board image size: \(error)")
+            }
+        }
+    }
+
     private func addStickerToBoard(sticker: Sticker) {
         var newSticker = sticker
         let randomX = CGFloat.random(in: 50...300)
@@ -380,7 +428,43 @@ struct BoardView: View {
     }
     
     private func loadBoardImages() {
-        // Implement the method to load board images from CloudKit
+        isLoading = true
+        BoardImageManager.shared.fetchBoardImages(forBoardID: boardID) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let images):
+                    self.boardImages = images
+                case .failure(let error):
+                    self.errorMessage = "Failed to load board images: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func loadSelectedImage() {
+        guard let selectedImage = selectedImage else { return }
+        
+        let defaultSize: CGFloat = 200
+        let newBoardImage = BoardImage(
+            image: selectedImage,
+            position: CGPoint(x: 100, y: 100),
+            frameSize: CGSize(width: defaultSize, height: defaultSize)
+        )
+        boardImages.append(newBoardImage)
+        
+        // Save the new board image to CloudKit
+        BoardImageManager.shared.saveBoardImageBatch(newBoardImage, boardID: boardID) { result in
+            switch result {
+            case .success(let savedImage):
+                print("Board image saved successfully: \(savedImage)")
+                if let index = boardImages.firstIndex(where: { $0.id == newBoardImage.id }) {
+                    boardImages[index] = savedImage  // Update the local board image with the saved recordID
+                }
+            case .failure(let error):
+                print("Failed to save board image: \(error)")
+            }
+        }
     }
 
     private func fetchStickers() {
