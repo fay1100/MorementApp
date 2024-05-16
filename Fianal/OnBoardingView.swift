@@ -72,7 +72,7 @@ struct OnboardingView: View {
 
     private func checkUserProfileExistence() {
         let onboardingCompleted = UserDefaults.standard.bool(forKey: "OnboardingCompleted")
-        if (onboardingCompleted) {
+        if onboardingCompleted {
             self.isOnboardingComplete = true
             return
         }
@@ -95,6 +95,7 @@ struct OnboardingView: View {
     }
 
 
+
     private func createUserProfileAndCompleteOnboarding() {
         UserProfileManager.shared.createUserProfile(nickname: userName) { result in
             DispatchQueue.main.async {
@@ -107,7 +108,6 @@ struct OnboardingView: View {
                 }
             }
         }
-    
     }
 
 

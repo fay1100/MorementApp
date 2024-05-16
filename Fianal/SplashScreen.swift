@@ -1,12 +1,13 @@
 import SwiftUI
 import AVKit
 
+
+
 struct SplashScreen: View {
     @State private var isActive = false
     @State private var isOnboardingCompleted = false
     @Environment(\.scenePhase) private var scenePhase
-    private let splashDelay = 1.0 // Configurable delay duration
-
+    private let splashDelay = 3.0
     var body: some View {
         ZStack {
             VideoPlayerView(videoName: "splashVideo")
@@ -21,7 +22,7 @@ struct SplashScreen: View {
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active && !isActive {
-                // Optionally reset or adjust behavior when app comes to foreground
+                // Optional reset or adjust behavior when app comes to foreground
             }
         }
         .fullScreenCover(isPresented: $isActive) {
@@ -33,6 +34,9 @@ struct SplashScreen: View {
         }
     }
 }
+
+
+
 
 struct VideoPlayerView: UIViewRepresentable {
     let videoName: String
