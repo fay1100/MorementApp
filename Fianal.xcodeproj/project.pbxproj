@@ -32,7 +32,8 @@
 		5ACBB25E2BF409F9002EEF42 /* StickyNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */; };
 		5AE689722BF648570036118C /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE689712BF648570036118C /* TimerView.swift */; };
 		5AE689742BF6538C0036118C /* BoardTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE689732BF6538C0036118C /* BoardTimer.swift */; };
-		5AFD5D402BF6A8B200631143 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFD5D3F2BF6A8B200631143 /* NotificationManager.swift */; };
+		5AFD5D442BF6B61800631143 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFD5D422BF6B61500631143 /* NotificationManager.swift */; };
+		5AFD5D472BF6B7DF00631143 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFD5D452BF6B7DC00631143 /* AppDelegate.swift */; };
 		E531664E2BD39DF300D168A4 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664D2BD39DF300D168A4 /* MainView.swift */; };
 		E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E531664F2BD3A74400D168A4 /* CreateBoardView.swift */; };
 		E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E53166512BE258A500D168A4 /* OnBoardingView.swift */; };
@@ -87,8 +88,9 @@
 		5ACBB25D2BF409F9002EEF42 /* StickyNote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickyNote.swift; sourceTree = "<group>"; };
 		5AE689712BF648570036118C /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
 		5AE689732BF6538C0036118C /* BoardTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardTimer.swift; sourceTree = "<group>"; };
-		5AFD5D3F2BF6A8B200631143 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		5AFD5D412BF6AC7900631143 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5AFD5D422BF6B61500631143 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = FianalUITests/NotificationManager.swift; sourceTree = SOURCE_ROOT; };
+		5AFD5D452BF6B7DC00631143 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E531664D2BD39DF300D168A4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		E531664F2BD3A74400D168A4 /* CreateBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateBoardView.swift; sourceTree = "<group>"; };
 		E53166512BE258A500D168A4 /* OnBoardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnBoardingView.swift; sourceTree = "<group>"; };
@@ -152,11 +154,11 @@
 				0B15CA4D2BF0988200F7A6CE /* SwiftUIView.swift */,
 				5A62D7BF2BC37A8600BBCE5C /* ContentView.swift */,
 				E53166512BE258A500D168A4 /* OnBoardingView.swift */,
-				5AFD5D3F2BF6A8B200631143 /* NotificationManager.swift */,
 				E53166552BEAD50C00D168A4 /* OnboadingData.swift */,
 				5A62D7E72BC3A4A700BBCE5C /* BoardView.swift */,
 				5A62D7EB2BC3B25800BBCE5C /* DetailsView.swift */,
 				E532E3E92BEBE70000155F04 /* JoinView.swift */,
+				5AFD5D452BF6B7DC00631143 /* AppDelegate.swift */,
 				E531664D2BD39DF300D168A4 /* MainView.swift */,
 				E531664F2BD3A74400D168A4 /* CreateBoardView.swift */,
 				5AA35BC02BC46CDF0034E6F6 /* ControllerRepresentable.swift */,
@@ -164,6 +166,7 @@
 				5ACBB2532BF40969002EEF42 /* MembersListView.swift */,
 				5ACBB2572BF409A9002EEF42 /* ToolbarView.swift */,
 				5ACBB2512BF4094F002EEF42 /* ImagePicker.swift */,
+				5AFD5D422BF6B61500631143 /* NotificationManager.swift */,
 				5ACBB25B2BF409EF002EEF42 /* StickerGridView.swift */,
 				5A6746652BF61C370049B91E /* splashVideo.mp4 */,
 				5A62D7C12BC37A8700BBCE5C /* Assets.xcassets */,
@@ -348,7 +351,6 @@
 				E531664E2BD39DF300D168A4 /* MainView.swift in Sources */,
 				5A6746642BF5B78F0049B91E /* BoardImageManager.swift in Sources */,
 				5ACBB2542BF40969002EEF42 /* MembersListView.swift in Sources */,
-				5AFD5D402BF6A8B200631143 /* NotificationManager.swift in Sources */,
 				5ACBB2522BF4094F002EEF42 /* ImagePicker.swift in Sources */,
 				E53166562BEAD50C00D168A4 /* OnboadingData.swift in Sources */,
 				5A62D7EC2BC3B25800BBCE5C /* DetailsView.swift in Sources */,
@@ -356,6 +358,7 @@
 				5ACBB25C2BF409EF002EEF42 /* StickerGridView.swift in Sources */,
 				5AE689722BF648570036118C /* TimerView.swift in Sources */,
 				5AA35BC12BC46CDF0034E6F6 /* ControllerRepresentable.swift in Sources */,
+				5AFD5D472BF6B7DF00631143 /* AppDelegate.swift in Sources */,
 				5A62D7C02BC37A8600BBCE5C /* ContentView.swift in Sources */,
 				5ACBB25E2BF409F9002EEF42 /* StickyNote.swift in Sources */,
 				5ACBB2502BF4093D002EEF42 /* SplashScreen.swift in Sources */,
@@ -364,6 +367,7 @@
 				E53166522BE258A500D168A4 /* OnBoardingView.swift in Sources */,
 				E53166502BD3A74400D168A4 /* CreateBoardView.swift in Sources */,
 				5ACBB2582BF409A9002EEF42 /* ToolbarView.swift in Sources */,
+				5AFD5D442BF6B61800631143 /* NotificationManager.swift in Sources */,
 				E532E3EA2BEBE70000155F04 /* JoinView.swift in Sources */,
 				0B15CA4E2BF0988200F7A6CE /* SwiftUIView.swift in Sources */,
 			);

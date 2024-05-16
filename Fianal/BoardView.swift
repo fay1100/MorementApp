@@ -1,5 +1,6 @@
 import SwiftUI
 import CloudKit
+import UserNotifications
 
 struct BoardView: View {
     var boardID: String
@@ -29,8 +30,6 @@ struct BoardView: View {
     @State private var isTimeUp = false
     @State private var showSaveAlert = false
 
-    
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -44,7 +43,6 @@ struct BoardView: View {
                         }
                     })
 
-                
                 ForEach(stickyNotes) { stickyNote in
                     if !isTimeUp {
                         StickyNoteView(stickyNote: stickyNote)
@@ -77,9 +75,8 @@ struct BoardView: View {
                 
                 displayBoardImages()  // Display board images first
 
-                
                 ForEach($stickers) { $sticker in
-                    if !isTimeUp {
+                    if (!isTimeUp) {
                         displaySticker(sticker: $sticker)  // Display stickers last
                     } else {
                         displaySticker(sticker: $sticker)
@@ -123,7 +120,8 @@ struct BoardView: View {
                     Text("⌛️ \(formattedTimeRemaining())")
                         .font(.headline)
                         .padding()
-                        .background(Color.white.opacity(0.3))                      .cornerRadius(10)
+                        .background(Color.white.opacity(0.3))
+                        .cornerRadius(10)
                         .padding(.top, 10)
                     Spacer()
                 }
@@ -151,8 +149,7 @@ struct BoardView: View {
                             .font(.body)
                             .padding()
                             .background(Color("MainColor"))
-                            .foregroundColor(Color("GrayLight")
-)
+                            .foregroundColor(Color("GrayLight"))
                             .cornerRadius(10)
                     }
                     .padding()
@@ -175,22 +172,56 @@ struct BoardView: View {
         fetchStickers()
         fetchCreationDate()
         startTimer()
+        NotificationManager.shared.requestAuthorization()
     }
     
     private func fetchCreationDate() {
         BoardManager.shared.fetchBoardByBoardID(boardID) { result in
             switch result {
             case .success(let board):
-                if let creationDate = board["boardCreationDate"] as? Date { // Change to boardCreationDate
+                if let creationDate = board["boardCreationDate"] as? Date {
                     self.creationDate = creationDate
                     self.timeRemaining = self.timeRemaining(from: creationDate)
+                    
+                    // Schedule notifications
+                    let now = Date()
+                    let fiveMinutes: TimeInterval = 5 * 60
+                    let tenMinutes: TimeInterval = 10 * 60
+                    let fifteenMinutes: TimeInterval = 15 * 60
+                    
+                    if let joinDates = board["joinDates"] as? [String: Date] {
+                        for member in self.members {
+                            if let joinDate = joinDates[member], joinDate <= now {
+                                let timeSinceJoin = now.timeIntervalSince(joinDate)
+                                
+                                if timeSinceJoin < fiveMinutes {
+                                    scheduleNotificationForMember(member, interval: fiveMinutes - timeSinceJoin, identifierSuffix: "5min")
+                                }
+                                if timeSinceJoin < tenMinutes {
+                                    scheduleNotificationForMember(member, interval: tenMinutes - timeSinceJoin, identifierSuffix: "10min")
+                                }
+                                if timeSinceJoin < fifteenMinutes {
+                                    scheduleNotificationForMember(member, interval: fifteenMinutes - timeSinceJoin, identifierSuffix: "15min")
+                                }
+                            }
+                        }
+                    }
                 }
             case .failure(let error):
                 print("Failed to fetch creation date: \(error)")
             }
         }
     }
-    
+
+    private func scheduleNotificationForMember(_ member: String, interval: TimeInterval, identifierSuffix: String) {
+        NotificationManager.shared.scheduleNotification(
+            title: "Reminder",
+            body: "\(member), \(Int(interval / 60)) minutes have passed since you joined the board.",
+            timeInterval: interval,
+            identifier: "\(boardID)_\(identifierSuffix)_\(member)"
+        )
+    }
+
     private func startTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -206,7 +237,7 @@ struct BoardView: View {
     private func timeRemaining(from creationDate: Date) -> TimeInterval {
         let now = Date()
         let timeElapsed = now.timeIntervalSince(creationDate)
-        let timeRemaining = (60) - timeElapsed // 3 minutes in seconds
+        let timeRemaining = (24 * 60 * 60) - timeElapsed // 24 hours in seconds
         return max(timeRemaining, 0) // Ensure it doesn't go below 0
     }
 
@@ -392,7 +423,6 @@ struct BoardView: View {
         }
     }
 
-
     private func saveBoardImagePosition(_ boardImage: BoardImage) {
         BoardImageManager.shared.saveBoardImageBatch(boardImage, boardID: boardID) { result in
             switch result {
@@ -447,7 +477,6 @@ struct BoardView: View {
             }
         }
     }
-
 
     private func addStickyNoteToBoard() {
         let randomX = CGFloat.random(in: 50...300)  // تحديد نطاق للإحداثيات العشوائية X
@@ -534,7 +563,6 @@ struct BoardView: View {
             }
         }
     }
-
 
     private func loadMembers() {
         isLoading = true
@@ -679,9 +707,9 @@ struct BoardView: View {
     }
 }
 
-
 struct BoardView_Previews: PreviewProvider {
     static var previews: some View {
         BoardView(boardID: "12345", ownerNickname: "Alice", title: "Weekly Planning")
     }
 }
+
