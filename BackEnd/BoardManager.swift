@@ -50,16 +50,9 @@ class BoardManager {
                         self.createBoardRecord(uniqueID: uniqueID, title: title, ownerNickname: nickname, imageAsset: imageAsset) { result in
                             switch result {
                             case .success(let record):
-                                // إضافة تأخير قبل محاولة جلب البورد
+                                // Adding delay before attempting to fetch the board
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                    self.fetchBoardByBoardID(record["boardID"] as! String) { fetchResult in
-                                        switch fetchResult {
-                                        case .success(let fetchedRecord):
-                                            completion(.success(fetchedRecord))
-                                        case .failure(let error):
-                                            completion(.failure(error))
-                                        }
-                                    }
+                                    completion(.success(record))
                                 }
                             case .failure(let error):
                                 completion(.failure(error))
@@ -74,6 +67,7 @@ class BoardManager {
             }
         }
     }
+    
     
     private func createBoardRecord(uniqueID: String, title: String, ownerNickname: String, imageAsset: CKAsset?, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         let boardRecord = CKRecord(recordType: "Board")

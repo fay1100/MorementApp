@@ -1,13 +1,11 @@
-import SwiftUI
 import AVKit
-
-
+import SwiftUI
 
 struct SplashScreen: View {
     @State private var isActive = false
     @State private var isOnboardingCompleted = false
     @Environment(\.scenePhase) private var scenePhase
-    private let splashDelay = 3.0
+    private let splashDelay = 1.0
     var body: some View {
         ZStack {
             VideoPlayerView(videoName: "splashVideo")

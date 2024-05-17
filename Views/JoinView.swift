@@ -16,7 +16,6 @@ struct JoinBoardView: View {
     var body: some View {
         VStack(alignment: .center) {
             Text("Enter the board code")
-                .padding(.bottom)
             
             Divider()
                 .padding(.horizontal)
@@ -25,7 +24,7 @@ struct JoinBoardView: View {
             TextField("Enter Board ID", text: $boardID)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-                .padding(.top, -20)
+                .padding(.top, 5)
             
             if let joinError = joinError {
                 Text(joinError).foregroundColor(.red)
@@ -63,12 +62,12 @@ struct JoinBoardView: View {
                     BoardView(boardID: boardID, ownerNickname: ownerNickname, title: boardTitle)
                 }
             }
-            .padding(.top, 30)
+            .padding(.top, 10)
         }
         .frame(width: 290, height: 280)
         .background(Color.white)
         .cornerRadius(16)
-        .shadow(radius: 20)
+
     }
 
     private func joinBoard() {
@@ -116,5 +115,13 @@ struct JoinBoardView: View {
                 }
             }
         }
+    }
+}
+struct JoinBoardView_Previews: PreviewProvider {
+    @State static var nickname = "SampleNickname"
+    @State static var isShowingPopover = true
+    
+    static var previews: some View {
+        JoinBoardView(nickname: $nickname, isShowingPopover: $isShowingPopover)
     }
 }

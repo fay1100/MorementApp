@@ -3,99 +3,123 @@ import CloudKit
 
 struct MainView: View {
     @State private var nickname: String = ""
-    @State private var isLoading = true  // Initially true to show loading on view appear
+    @State private var isLoading = true
     @State private var navigatingToBoardCreation = false
-    @State private var showingJoinBoard = false  // Updated state for showing the JoinBoardView
+    @State private var showingJoinBoard = false
     @State private var errorMessage: String?
     @State private var boards: [(record: CKRecord, image: UIImage?)] = []
     @State private var showingDeleteAlert = false
+    @State private var selectedBoard: (record: CKRecord, image: UIImage?)? = nil // Added state to handle board selection
 
     var body: some View {
         NavigationStack {
-              ZStack {
-                  // Check if we are still loading data
-                     if isLoading {
-                         ProgressView("Loading...").scaleEffect(1.5, anchor: .center)
-                     } else if boards.isEmpty {
-                         // If not loading and boards are empty, show empty state view
-                         emptyStateView
-                     } else {
-                         // If we have boards, show the boards list
-                         boardsList
-                     }
-                 }
-                 .onAppear {
-                     fetchBoards()  // Fetching boards on view appear
-                 }
-              
-              .navigationBarItems(
-                  leading: AnyView(Text("Welcome, \(nickname)!").bold()),
-                  trailing: HStack {
-                            Button(action: {
-                                showingJoinBoard = true
-                            }) {
-                                Image(systemName: "person.2")
-                                    .foregroundColor(Color("MainColor")) // لون الأيقونة
-
-
-                            }
-                            Button(action: {
-                                navigatingToBoardCreation = true
-                            }) {
-                                Image(systemName: "plus.rectangle")
-                                    .foregroundColor(Color("MainColor"))
-                            }
+            ZStack {
+                GeometryReader { geometry in
+                    VStack {
+                        Divider()
+                            .offset(x: geometry.size.width * 0.0, y: geometry.size.height * -0.01)
+                        
+                        let welcomeText = Text("Welcome, \(nickname)!")
+                            .fontWeight(.bold)
+                        let normalText = Text("\nWhat moments will you cherish today?")
+                            .fontWeight(.regular)
+                            .font(.system(size: 16))
+                        
+                        (welcomeText + normalText)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .bold()
+                            .offset(x: geometry.size.width * -0.10, y: geometry.size.height * -0.01)
+                        
+                        Spacer()
+                        
+                        if isLoading {
+                            ProgressView("Loading...").scaleEffect(1.5, anchor: .center)
+                        } else if boards.isEmpty {
+                            emptyStateView
+                        } else {
+                            boardsList
                         }
-                    
-              )
-              .navigationBarBackButtonHidden(true)
-              .navigationTitle("Boards")
-              
-              .onAppear {
-                fetchUserProfile()
-                fetchBoards()
-            }
-            
-            
-            
-            .fullScreenCover(isPresented: $navigatingToBoardCreation) {
-                            BoardCreationView()
-                                .transition(.move(edge: .trailing))
+                    }
+                }
+                .onAppear {
+                    fetchBoards()
+                }
+                .navigationBarItems(
+                    trailing: HStack {
+                        Button(action: {
+                            showingJoinBoard = true
+                        }) {
+                            Image(systemName: "person.2")
+                                .foregroundColor(Color("MainColor"))
                         }
-            .overlay(
-                         Group {
-                             if showingJoinBoard {
-                                 JoinBoardView(nickname: $nickname, isShowingPopover: $showingJoinBoard)
-                                     .background(Color.white)
-                                     .cornerRadius(20)
-                                     .shadow(radius: 10)
-                                     .transition(.scale)
-                             }
-                         }, alignment: .center
-                     )
-            .alert(isPresented: $showingDeleteAlert) {
-                Alert(
-                    title: Text("Confirm Deletion"),
-                    message: Text("Are you sure you want to delete your profile?"),
-                    primaryButton: .destructive(Text("Delete")) {
-                        deleteUserProfile()
-                    },
-                    secondaryButton: .cancel()
+                        Button(action: {
+                            navigatingToBoardCreation = true
+                        }) {
+                            Image(systemName: "plus.rectangle")
+                                .foregroundColor(Color("MainColor"))
+                        }
+                    }
                 )
+                .navigationBarBackButtonHidden(true)
+                .navigationTitle("Boards")
+                .fullScreenCover(isPresented: $navigatingToBoardCreation) {
+                    BoardCreationView()
+                        .transition(.move(edge: .trailing))
+                }
+                .overlay(
+                    Group {
+                        if showingJoinBoard {
+                            JoinBoardView(nickname: $nickname, isShowingPopover: $showingJoinBoard)
+                                .background(Color.white)
+                                .cornerRadius(20)
+                                .shadow(radius: 10)
+                                .transition(.scale)
+                        }
+                    }, alignment: .center
+                )
+                .alert(isPresented: $showingDeleteAlert) {
+                    Alert(
+                        title: Text("Confirm Deletion"),
+                        message: Text("Are you sure you want to delete your profile?"),
+                        primaryButton: .destructive(Text("Delete")) {
+                            deleteUserProfile()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
             }
+            .background(
+                NavigationLink(
+                    destination: BoardView(boardID: selectedBoard?.record["boardID"] as? String ?? "Unknown",
+                                           ownerNickname: extractOwnerNickname(from: selectedBoard?.record ?? CKRecord(recordType: "Board")),
+                                           title: selectedBoard?.record["title"] as? String ?? "Unnamed Board"),
+                    isActive: Binding(
+                        get: { selectedBoard != nil },
+                        set: { if !$0 { selectedBoard = nil } }
+                    )
+                )
+                { EmptyView() }
+            )
         }
     }
+
     private var emptyStateView: some View {
-        VStack(alignment: .center) {
-            Image("Empty")
-            Text("Start designing your boards by creating a new board")
-                .foregroundColor(Color.gray.opacity(0.5))
-                .multilineTextAlignment(.center)
+        GeometryReader { geometry in
+            VStack {
+                VStack(alignment: .center) {
+                    Image("Empty")
+
+                    Text("Start designing your boards by creating a new board")
+                        .foregroundColor(Color.gray.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                    
+                }
+                .padding()
+            }
+            .offset(x: geometry.size.width * 0.0, y: geometry.size.height * 0.07)
         }
-        .padding()
     }
-
-
 
     var boardsList: some View {
         ScrollView {
@@ -111,30 +135,29 @@ struct MainView: View {
         }
     }
 
-
     func boardCard(for board: (record: CKRecord, image: UIImage?)) -> some View {
-        NavigationLink(destination: BoardView(boardID: board.record["boardID"] as? String ?? "Unknown",
-                                               ownerNickname: extractOwnerNickname(from: board.record),
-                                               title: board.record["title"] as? String ?? "Unnamed Board"))
-        {
-            
+        Button(action: {
+            selectedBoard = board // Set the selected board to trigger navigation
+        }) {
             VStack {
                 if let image = board.image {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
+                        .frame(width: 170, height: 130)
                         .clipped()
-                        .frame(width: 170, height: 150)
+                        .offset(y: -10)
                         .clipShape(RoundedCorner(radius: 10, corners: [.topLeft, .topRight]))
                         .background(Color.white)
                 } else {
                     Image(systemName: "photo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 190, height: 150)
+                        .frame(width: 190, height: 130)
                         .cornerRadius(10)
                         .foregroundColor(.gray)
                         .background(Color.white)
+                        .offset(y: -10)
                 }
                 Text(board.record["title"] as? String ?? "Unnamed Board")
                     .font(.system(size: 19))
@@ -167,9 +190,7 @@ struct MainView: View {
         .cornerRadius(10)
         .padding()
     }
-    
 
-    
     func fetchUserProfile() {
         isLoading = true
         UserProfileManager.shared.fetchUserProfile { result in
@@ -178,7 +199,7 @@ struct MainView: View {
                 switch result {
                 case .success(let fetchedNickname):
                     if let nickname = fetchedNickname {
-                        self.nickname = nickname // Updating the nickname state
+                        self.nickname = nickname
                     } else {
                         errorMessage = "No profile exists, please create one."
                     }
@@ -188,23 +209,23 @@ struct MainView: View {
             }
         }
     }
-    
+
     func deleteBoard(boardID: String) {
-            isLoading = true
-            BoardManager.shared.handleBoardDeletion(boardID: boardID) { result in
-                DispatchQueue.main.async {
-                    isLoading = false
-                    switch result {
-                    case .success():
-                        self.boards.removeAll { $0.record["boardID"] as? String ?? "" == boardID }
-                        print("Board deleted successfully.")
-                    case .failure(let error):
-                        self.errorMessage = "Failed to delete board: \(error.localizedDescription)"
-                    }
+        isLoading = true
+        BoardManager.shared.handleBoardDeletion(boardID: boardID) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success():
+                    self.boards.removeAll { $0.record["boardID"] as? String ?? "" == boardID }
+                    print("Board deleted successfully.")
+                case .failure(let error):
+                    self.errorMessage = "Failed to delete board: \(error.localizedDescription)"
                 }
             }
         }
-    
+    }
+
     func deleteUserProfile() {
         UserProfileManager.shared.deleteUserProfile(nickname: nickname) { result in
             switch result {
@@ -263,18 +284,17 @@ struct MainView: View {
 
         group.notify(queue: DispatchQueue.main) {
             self.boards = fetchedBoards.sorted { $0.record.creationDate ?? Date.distantPast > $1.record.creationDate ?? Date.distantPast }
-            self.isLoading = false  // Ensure this is only set after all fetches are complete
+            self.isLoading = false
         }
     }
 }
 
-
-
-struct UMainView_Previews: PreviewProvider {
+struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         MainView()
     }
 }
+
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners

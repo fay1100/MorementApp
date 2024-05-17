@@ -29,22 +29,20 @@ struct StickyNoteView: View {
     @ObservedObject var stickyNote: StickyNote
 
     var body: some View {
-        VStack {
-            TextField("Enter note text", text: $stickyNote.text)
-                .padding()
-                .frame(width: 200, height: 200)  // Set fixed size for the sticky note
-                .background(stickyNote.color)
-                .cornerRadius(15)  // Add corner radius
-                .scaleEffect(stickyNote.scale)
-                .position(stickyNote.position)
-                .multilineTextAlignment(.center)  // Center text alignment
-                .foregroundColor(.black)  // Text color
-                .font(stickyNote.isBold ? .system(size: 16, weight: .bold) : .system(size: 16, weight: .regular))
-                .rotationEffect(stickyNote.rotation)  // Apply rotation
-        }
+        TextEditor(text: $stickyNote.text)
+            .padding()
+            .frame(width: 200, height: 200)  // Set fixed size for the sticky note
+            .background(stickyNote.color)
+            .cornerRadius(15)  // Add corner radius
+            .scaleEffect(stickyNote.scale)
+            .position(stickyNote.position)
+            .multilineTextAlignment(.center)  // Center text alignment
+            .foregroundColor(.black)  // Text color
+            .font(stickyNote.isBold ? .system(size: 16, weight: .bold) : .system(size: 16, weight: .regular))
+            .rotationEffect(stickyNote.rotation)  // Apply rotation
+            .scrollContentBackground(.hidden)  // Hide default background of TextEditor
     }
 }
-
 struct StickyNoteToolbar: View {
     @ObservedObject var stickyNote: StickyNote
     var onDelete: () -> Void

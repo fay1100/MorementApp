@@ -6,7 +6,8 @@ struct BoardView: View {
     var boardID: String
     var ownerNickname: String
     var title: String
-    
+    @Environment(\.presentationMode) var presentationMode // Added Environment property
+
     @State private var showingPopover = false
     @State private var showStickers = false
     @State private var tempImage: UIImage?
@@ -129,10 +130,11 @@ struct BoardView: View {
 
             .onAppear(perform: setupView)
             .navigationBarTitle(title, displayMode: .inline)
+            
             .navigationBarItems(leading: backButton(), trailing: trailingButtons())
             .toolbar { if !isTimeUp { toolbarItems() } }
             .overlay(popoverOverlay(), alignment: .center)
-            .overlay(membersListOverlay())
+            .overlay(membersListOverlay().padding(.bottom, 44)) // Add padding to avoid toolbar overlap
             .sheet(isPresented: $isImagePickerPresented, onDismiss: loadSelectedImage) {
                 ImagePicker(selectedImage: $selectedImage, sourceType: .photoLibrary)
             }
@@ -155,7 +157,7 @@ struct BoardView: View {
                     .padding()
                 }
             }
-        }
+        }.navigationBarBackButtonHidden(true)
     }
     
     private func formattedTimeRemaining() -> String {
@@ -182,30 +184,42 @@ struct BoardView: View {
                 if let creationDate = board["boardCreationDate"] as? Date {
                     self.creationDate = creationDate
                     self.timeRemaining = self.timeRemaining(from: creationDate)
-                    
-                    // Schedule notifications
-                    let now = Date()
-                    let fiveMinutes: TimeInterval = 5 * 60
-                    let tenMinutes: TimeInterval = 10 * 60
-                    let fifteenMinutes: TimeInterval = 15 * 60
-                    
-                    if let joinDates = board["joinDates"] as? [String: Date] {
-                        for member in self.members {
-                            if let joinDate = joinDates[member], joinDate <= now {
-                                let timeSinceJoin = now.timeIntervalSince(joinDate)
-                                
-                                if timeSinceJoin < fiveMinutes {
-                                    scheduleNotificationForMember(member, interval: fiveMinutes - timeSinceJoin, identifierSuffix: "5min")
+
+                    // فترات زمنية: 12 ساعة، 23 ساعة، 24 ساعة
+                    let intervals: [TimeInterval] = [12 * 60 * 60, 23 * 60 * 60, 24 * 60 * 60]
+
+                    for (index, interval) in intervals.enumerated() {
+                        if let creationDate = self.creationDate {
+                            let now = Date()
+                            let timeElapsed = now.timeIntervalSince(creationDate)
+
+                            if timeElapsed < interval {
+                                let timeInterval = interval - timeElapsed
+                                let notificationBody: String
+                                switch index {
+                                case 0:
+                                    notificationBody = "It’s been 12 hours.. "
+                                case 1:
+                                    notificationBody = "Hey! Hurry up, you have 59 minutes ⏳"
+                                case 2:
+                                    notificationBody = "A lot of memories are here! Let’s save it! 📩"
+                                default:
+                                    notificationBody = ""
                                 }
-                                if timeSinceJoin < tenMinutes {
-                                    scheduleNotificationForMember(member, interval: tenMinutes - timeSinceJoin, identifierSuffix: "10min")
-                                }
-                                if timeSinceJoin < fifteenMinutes {
-                                    scheduleNotificationForMember(member, interval: fifteenMinutes - timeSinceJoin, identifierSuffix: "15min")
-                                }
+                                print("Scheduling notification: \(notificationBody) in \(timeInterval) seconds")
+                                NotificationManager.shared.scheduleNotification(
+                                    title: title,
+                                    body: notificationBody,
+                                    timeInterval: timeInterval,
+                                    identifier: "\(boardID)_\(interval)_reminder"
+                                )
+                            } else {
+                                print("Time elapsed (\(timeElapsed) seconds) is greater than or equal to the interval (\(interval) seconds)")
                             }
                         }
                     }
+                } else {
+                    print("Creation date is nil")
                 }
             case .failure(let error):
                 print("Failed to fetch creation date: \(error)")
@@ -213,14 +227,22 @@ struct BoardView: View {
         }
     }
 
+
+
+
+
+
     private func scheduleNotificationForMember(_ member: String, interval: TimeInterval, identifierSuffix: String) {
+        let notificationTitle = "Reminder"
+        let notificationBody = "\(member), \(Int(interval / 60)) minutes have passed since you joined the board. Don't forget to check your tasks!"
         NotificationManager.shared.scheduleNotification(
-            title: "Reminder",
-            body: "\(member), \(Int(interval / 60)) minutes have passed since you joined the board.",
+            title: notificationTitle,
+            body: notificationBody,
             timeInterval: interval,
             identifier: "\(boardID)_\(identifierSuffix)_\(member)"
         )
     }
+
 
     private func startTimer() {
         timer?.invalidate()
@@ -296,7 +318,9 @@ struct BoardView: View {
     }
     
     private func backButton() -> some View {
-        NavigationLink(destination: MainView()) {
+        Button(action: {
+            presentationMode.wrappedValue.dismiss()
+        }) {
             Image(systemName: "chevron.left")
                 .foregroundColor(Color("MainColor"))
         }
@@ -322,30 +346,33 @@ struct BoardView: View {
     
     private func toolbarItems() -> some ToolbarContent {
         ToolbarItem(placement: .bottomBar) {
-            if let selectedStickyNoteID = selectedStickyNoteID,
-               let index = stickyNotes.firstIndex(where: { $0.id == selectedStickyNoteID }) {
-                StickyNoteToolbar(
-                    stickyNote: stickyNotes[index],
-                    onDelete: {
-                        // Remove from CloudKit
-                        StickyNoteManager.shared.deleteStickyNote(stickyNotes[index]) { result in
-                            switch result {
-                            case .success():
-                                // Remove from local array
-                                stickyNotes.remove(at: index)
-                                self.selectedStickyNoteID = nil
-                            case .failure(let error):
-                                print("Failed to delete sticky note: \(error)")
+            HStack {
+                if let selectedStickyNoteID = selectedStickyNoteID,
+                   let index = stickyNotes.firstIndex(where: { $0.id == selectedStickyNoteID }) {
+                    StickyNoteToolbar(
+                        stickyNote: stickyNotes[index],
+                        onDelete: {
+                            // Remove from CloudKit
+                            StickyNoteManager.shared.deleteStickyNote(stickyNotes[index]) { result in
+                                switch result {
+                                case .success():
+                                    // Remove from local array
+                                    stickyNotes.remove(at: index)
+                                    self.selectedStickyNoteID = nil
+                                case .failure(let error):
+                                    print("Failed to delete sticky note: \(error)")
+                                }
                             }
+                        },
+                        onBold: {
+                            stickyNotes[index].isBold.toggle()  // Toggle bold state
                         }
-                    },
-                    onBold: {
-                        stickyNotes[index].isBold.toggle()  // Toggle bold state
-                    }
-                )
-            } else {
-                ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard, isImagePickerPresented: $isImagePickerPresented)
+                    )
+                } else {
+                    ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard, isImagePickerPresented: $isImagePickerPresented)
+                }
             }
+            .background(Color("GrayLight")) // Match the main view's background color
         }
     }
     
@@ -712,4 +739,3 @@ struct BoardView_Previews: PreviewProvider {
         BoardView(boardID: "12345", ownerNickname: "Alice", title: "Weekly Planning")
     }
 }
-

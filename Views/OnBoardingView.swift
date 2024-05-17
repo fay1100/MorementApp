@@ -55,8 +55,12 @@ struct OnboardingView: View {
                 Spacer()
             }
             .navigationBarItems(trailing: Button("Skip") {
-                UserDefaults.standard.set(true, forKey: "OnboardingCompleted")
-                isOnboardingComplete = true
+                if userHasProfile {
+                    UserDefaults.standard.set(true, forKey: "OnboardingCompleted")
+                    isOnboardingComplete = true
+                } else {
+                    currentPage = onboardingData.count
+                }
             }
             .foregroundColor(.gray)
             .disabled(userName.isEmpty && !userHasProfile && currentPage == onboardingData.count)
@@ -94,8 +98,6 @@ struct OnboardingView: View {
         }
     }
 
-
-
     private func createUserProfileAndCompleteOnboarding() {
         UserProfileManager.shared.createUserProfile(nickname: userName) { result in
             DispatchQueue.main.async {
@@ -109,9 +111,6 @@ struct OnboardingView: View {
             }
         }
     }
-
-
-
 }
 
 struct OnboardingSlideView: View {
