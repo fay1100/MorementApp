@@ -26,7 +26,7 @@ struct BoardView: View {
     @State private var stickerToDelete: Sticker? = nil
     @State private var imageToDelete: BoardImage? = nil
     @State private var creationDate: Date? = nil
-    @State private var timeRemaining: TimeInterval = 0
+    @State private var timeRemaining: TimeInterval = 2
     @State private var timer: Timer? = nil
     @State private var isTimeUp = false
     @State private var showSaveAlert = false

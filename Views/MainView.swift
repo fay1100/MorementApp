@@ -1,6 +1,5 @@
 import SwiftUI
 import CloudKit
-
 struct MainView: View {
     @State private var nickname: String = ""
     @State private var isLoading = true
@@ -34,7 +33,7 @@ struct MainView: View {
                         Spacer()
                         
                         if isLoading {
-                            ProgressView("Loading...").scaleEffect(1.5, anchor: .center)
+                            ProgressView().scaleEffect(1.5, anchor: .center)
                         } else if boards.isEmpty {
                             emptyStateView
                         } else {

@@ -1,9 +1,3 @@
-//
-//  stickersView.swift
-//  Fianal
-//
-//  Created by Nora Aldossary on 22/10/1445 AH.
-//
 import SwiftUI
 
 
