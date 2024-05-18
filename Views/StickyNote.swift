@@ -2,6 +2,7 @@ import SwiftUI
 import CloudKit
 
 // StickyNote data structure
+// StickyNote data structure
 class StickyNote: Identifiable, ObservableObject {
     let id = UUID()
     @Published var text: String
@@ -27,22 +28,57 @@ class StickyNote: Identifiable, ObservableObject {
 
 struct StickyNoteView: View {
     @ObservedObject var stickyNote: StickyNote
-
+    @State private var debounceWorkItem: DispatchWorkItem?
+    private let debounceInterval = 0.5 // Delay interval for debouncing
+    
     var body: some View {
-        TextEditor(text: $stickyNote.text)
-            .padding()
-            .frame(width: 200, height: 200)  // Set fixed size for the sticky note
-            .background(stickyNote.color)
-            .cornerRadius(15)  // Add corner radius
-            .scaleEffect(stickyNote.scale)
-            .position(stickyNote.position)
-            .multilineTextAlignment(.center)  // Center text alignment
-            .foregroundColor(.black)  // Text color
-            .font(stickyNote.isBold ? .system(size: 16, weight: .bold) : .system(size: 16, weight: .regular))
-            .rotationEffect(stickyNote.rotation)  // Apply rotation
-            .scrollContentBackground(.hidden)  // Hide default background of TextEditor
+        VStack {
+            TextField("Enter note text", text: $stickyNote.text, onCommit: {
+                hideKeyboard()
+            })
+                .padding()
+                .frame(width: 200, height: 200)  // Set fixed size for the sticky note
+                .background(stickyNote.color)
+                .cornerRadius(15)  // Add corner radius
+                .scaleEffect(stickyNote.scale)
+                .position(stickyNote.position)
+                .multilineTextAlignment(.center)  // Center text alignment
+                .foregroundColor(.black)  // Text color
+                .font(stickyNote.isBold ? .system(size: 16, weight: .bold) : .system(size: 16, weight: .regular))
+                .rotationEffect(stickyNote.rotation)  // Apply rotation
+                .onChange(of: stickyNote.text) { newText in
+                    debounceSaveStickyNote()
+                }
+        }
+    }
+    
+    private func debounceSaveStickyNote() {
+        debounceWorkItem?.cancel()
+        
+        debounceWorkItem = DispatchWorkItem { [weak stickyNote] in
+            guard let stickyNote = stickyNote else { return }
+            StickyNoteManager.shared.saveStickyNoteBatch(stickyNote, boardID: "YOUR_BOARD_ID_HERE") { result in
+                switch result {
+                case .success(let savedNote):
+                    print("Sticky note saved successfully: \(savedNote.text)")
+                case .failure(let error):
+                    print("Failed to save sticky note: \(error)")
+                }
+            }
+        }
+        
+        if let workItem = debounceWorkItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + debounceInterval, execute: workItem)
+        }
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+
+
+
 struct StickyNoteToolbar: View {
     @ObservedObject var stickyNote: StickyNote
     var onDelete: () -> Void
@@ -143,4 +179,3 @@ struct StickyNoteToolbar_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
     }
 }
-

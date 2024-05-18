@@ -53,6 +53,7 @@ class StickyNoteManager {
     }
     
     private func saveStickyNoteToCloud(_ stickyNote: StickyNote, boardID: String, completion: @escaping (Result<StickyNote, Error>) -> Void) {
+        print("Attempting to save sticky note with text: \(stickyNote.text)")
         if let recordID = stickyNote.recordID {
             publicDatabase.fetch(withRecordID: recordID) { [weak self] fetchedRecord, error in
                 guard let self = self else { return }
@@ -60,6 +61,7 @@ class StickyNoteManager {
                 if let existingRecord = fetchedRecord {
                     self.updateStickyNoteRecord(existingRecord, with: stickyNote, boardID: boardID, completion: completion)
                 } else if let error = error {
+                    print("Error fetching record: \(error)")
                     completion(.failure(error))
                 }
             }
@@ -70,6 +72,7 @@ class StickyNoteManager {
     }
     
     private func updateStickyNoteRecord(_ record: CKRecord, with stickyNote: StickyNote, boardID: String, completion: @escaping (Result<StickyNote, Error>) -> Void) {
+        print("Updating record with text: \(stickyNote.text)")
         record["text"] = stickyNote.text
         record["positionX"] = Double(stickyNote.position.x)
         record["positionY"] = Double(stickyNote.position.y)
@@ -121,10 +124,11 @@ class StickyNoteManager {
         publicDatabase.perform(query, inZoneWith: nil) { records, error in
             DispatchQueue.main.async {
                 if let error = error {
+                    print("Error fetching sticky notes: \(error)")
                     completion(.failure(error))
                 } else if let records = records {
                     let stickyNotes = records.map { record in
-                        StickyNote(
+                        let note = StickyNote(
                             text: record["text"] as? String ?? "",
                             position: CGPoint(x: record["positionX"] as? Double ?? 0.0, y: record["positionY"] as? Double ?? 0.0),
                             scale: CGFloat(record["scale"] as? Double ?? 1.0),
@@ -133,6 +137,8 @@ class StickyNoteManager {
                             rotation: Angle(degrees: record["rotation"] as? Double ?? 0),
                             recordID: record.recordID
                         )
+                        print("Fetched sticky note with text: \(note.text)")
+                        return note
                     }
                     completion(.success(stickyNotes))
                 } else {
@@ -141,6 +147,7 @@ class StickyNoteManager {
             }
         }
     }
+
     
     func deleteStickyNote(_ stickyNote: StickyNote, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let recordID = stickyNote.recordID else {

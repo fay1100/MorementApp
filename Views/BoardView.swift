@@ -395,8 +395,9 @@ struct BoardView: View {
                     .background(Color.white)
                     .cornerRadius(15)
                     .transition(.move(edge: .top))
-                    .padding(.top, -345)
-                    .padding(.trailing, -120)
+//                    .padding(.top, -365)
+//                    .padding(.trailing, -400)
+                    .position(x:310, y:95)
             }
         }
     }
@@ -413,35 +414,46 @@ struct BoardView: View {
                         .clipped()  // قص الصورة لتناسب الإطار
                         .cornerRadius(10)
                         .gesture(TapGesture().onEnded {
-                            imageToDelete = boardImage.wrappedValue
-                            stickerToDelete = nil
+                            if !isTimeUp {
+                                imageToDelete = boardImage.wrappedValue
+                                stickerToDelete = nil
+                            }
                         })
                         .gesture(DragGesture()
                             .onChanged { value in
-                                // احسب الموضع الجديد بالنسبة لموضع البداية
-                                let newX = boardImage.position.wrappedValue.x + value.translation.width
-                                let newY = boardImage.position.wrappedValue.y + value.translation.height
-                                let newLocation = CGPoint(x: newX, y: newY)
-                                boardImage.position.wrappedValue = newLocation
+                                if !isTimeUp {
+                                    // احسب الموضع الجديد بالنسبة لموضع البداية
+                                    let newX = boardImage.position.wrappedValue.x + value.translation.width
+                                    let newY = boardImage.position.wrappedValue.y + value.translation.height
+                                    let newLocation = CGPoint(x: newX, y: newY)
+                                    boardImage.position.wrappedValue = newLocation
+                                }
                             }
                             .onEnded { value in
-                                saveBoardImagePosition(boardImage.wrappedValue)
+                                if !isTimeUp {
+                                    saveBoardImagePosition(boardImage.wrappedValue)
+                                }
                             }
                         )
                         .gesture(MagnificationGesture()
                             .onChanged { value in
-                                let minFrameSize: CGFloat = 150  // تحديد الحد الأدنى للحجم
-                                let maxFrameSize: CGFloat = 400  // تحديد الحد الأقصى للحجم
-                                let newSize = boardImage.frameSize.wrappedValue.width * value
-                                boardImage.frameSize.wrappedValue = CGSize(
-                                    width: min(max(newSize, minFrameSize), maxFrameSize),
-                                    height: min(max(newSize, minFrameSize), maxFrameSize)
-                                )
+                                if !isTimeUp {
+                                    let minFrameSize: CGFloat = 150  // تحديد الحد الأدنى للحجم
+                                    let maxFrameSize: CGFloat = 400  // تحديد الحد الأقصى للحجم
+                                    let newSize = boardImage.frameSize.wrappedValue.width * value
+                                    boardImage.frameSize.wrappedValue = CGSize(
+                                        width: min(max(newSize, minFrameSize), maxFrameSize),
+                                        height: min(max(newSize, minFrameSize), maxFrameSize)
+                                    )
+                                }
                             }
                             .onEnded { _ in
-                                saveBoardImageSize(boardImage.wrappedValue)
+                                if !isTimeUp {
+                                    saveBoardImageSize(boardImage.wrappedValue)
+                                }
                             }
                         )
+                        .disabled(isTimeUp)  // تعطيل التفاعلات إذا انتهى الوقت
                         .zIndex(1)
                 }
                 .frame(width: boardImage.frameSize.wrappedValue.width, height: boardImage.frameSize.wrappedValue.height)

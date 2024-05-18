@@ -190,22 +190,27 @@ class BoardManager {
     
     func fetchBoardByBoardID(_ boardID: String, completion: @escaping (Result<CKRecord, Error>) -> Void) {
         let trimmedBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("Searching for board with ID: \(trimmedBoardID)")
         let predicate = NSPredicate(format: "boardID == %@", trimmedBoardID)
         let query = CKQuery(recordType: "Board", predicate: predicate)
         
         publicDatabase.perform(query, inZoneWith: nil) { records, error in
             DispatchQueue.main.async {
                 if let error = error {
+                    print("Error performing query: \(error)")
                     completion(.failure(error))
                 } else if let records = records, !records.isEmpty {
+                    print("Board found: \(records.first!)")
                     completion(.success(records.first!))
                 } else {
+                    print("Board not found with ID: \(trimmedBoardID)")
                     completion(.failure(NSError(domain: "BoardManagerError", code: 1007, userInfo: [NSLocalizedDescriptionKey: "Board not found"])))
                 }
             }
         }
     }
-    
+
+
     func addMemberToBoard(memberNickname: String, boardID: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let boardRecordID = CKRecord.ID(recordName: boardID)
         publicDatabase.fetch(withRecordID: boardRecordID) { [weak self] record, error in

@@ -10,6 +10,7 @@ struct BoardCreationView: View {
     @Environment(\.dismiss) var dismiss
     @State private var boardImage: UIImage? = nil
     @State private var showingImagePicker = false
+    @State private var isButtonDisabled = false
 
     var body: some View {
         let predefinedImages = ["upload", "thumbnail1", "thumbnail2", "thumbnail3"]
@@ -92,7 +93,6 @@ struct BoardCreationView: View {
                         .padding(.bottom , 20)
                         .font(.system(size: 12))
                     
-
                     if isLoading {
                         ProgressView()
                     }
@@ -108,9 +108,11 @@ struct BoardCreationView: View {
                     .foregroundColor(Color("MainColor")),
                     
                     trailing: Button("Done") {
+                        isButtonDisabled = true
                         isLoading = true
                         BoardManager.shared.createBoard(title: boardTitle, image: boardImage) { result in
                             isLoading = false
+                            isButtonDisabled = false
                             switch result {
                             case .success(let record):
                                 let ownerReference = record["owner"] as? CKRecord.Reference
@@ -123,8 +125,8 @@ struct BoardCreationView: View {
                             }
                         }
                     }
-                    .disabled(boardTitle.isEmpty || boardImage == nil)
-                    .foregroundColor(boardTitle.isEmpty || boardImage == nil ? .gray : Color("MainColor"))
+                    .disabled(boardTitle.isEmpty || boardImage == nil || isButtonDisabled)
+                    .foregroundColor((boardTitle.isEmpty || boardImage == nil || isButtonDisabled) ? .gray : Color("MainColor"))
                 )
                 .sheet(isPresented: $showingImagePicker) {
                     ImagePicker(selectedImage: $boardImage, sourceType: .photoLibrary)
@@ -161,7 +163,6 @@ struct BoardCreationView: View {
         }
     }
 }
-
 
 struct BoardCreationView_Previews: PreviewProvider {
     static var previews: some View {

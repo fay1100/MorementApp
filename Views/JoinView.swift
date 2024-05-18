@@ -74,29 +74,33 @@ struct JoinBoardView: View {
         let cleanBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
         isJoining = true
         joinError = nil
+        print("Attempting to join board with ID: \(cleanBoardID)")
+        
         BoardManager.shared.fetchBoardByBoardID(cleanBoardID) { [self] result in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // Adding a slight delay
+            DispatchQueue.main.async {
+                isJoining = false
                 switch result {
                 case .success(let boardRecord):
+                    print("Board found: \(boardRecord)")
                     boardTitle = boardRecord["title"] as? String ?? "Unknown"
                     ownerNickname = (boardRecord["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
                     BoardManager.shared.fetchBoardAcceptance(boardID: cleanBoardID) { acceptanceResult in
                         switch acceptanceResult {
                         case .success(let isAcceptingMembers):
+                            print("Board acceptance status: \(isAcceptingMembers)")
                             if isAcceptingMembers {
                                 proceedToAddMember(boardRecord: boardRecord)
                             } else {
-                                isJoining = false
                                 joinError = "This board is not accepting new members."
                             }
                         case .failure(let error):
-                            isJoining = false
                             joinError = "Failed to check board acceptance status: \(error.localizedDescription)"
+                            print("Error checking board acceptance status: \(error)")
                         }
                     }
                 case .failure(let error):
-                    isJoining = false
                     joinError = "Failed to join the board: \(error.localizedDescription)"
+                    print("Error joining board: \(error)")
                 }
             }
         }

@@ -1,5 +1,6 @@
 import SwiftUI
 import CloudKit
+
 struct MainView: View {
     @State private var nickname: String = ""
     @State private var isLoading = true
@@ -8,7 +9,7 @@ struct MainView: View {
     @State private var errorMessage: String?
     @State private var boards: [(record: CKRecord, image: UIImage?)] = []
     @State private var showingDeleteAlert = false
-    @State private var selectedBoard: (record: CKRecord, image: UIImage?)? = nil // Added state to handle board selection
+    @State private var selectedBoard: (record: CKRecord, image: UIImage?)? = nil
 
     var body: some View {
         NavigationStack {
@@ -20,6 +21,7 @@ struct MainView: View {
                         
                         let welcomeText = Text("Welcome, \(nickname)!")
                             .fontWeight(.bold)
+                        
                         let normalText = Text("\nWhat moments will you cherish today?")
                             .fontWeight(.regular)
                             .font(.system(size: 16))
@@ -42,6 +44,7 @@ struct MainView: View {
                     }
                 }
                 .onAppear {
+                    fetchUserProfile()
                     fetchBoards()
                 }
                 .navigationBarItems(
@@ -199,11 +202,14 @@ struct MainView: View {
                 case .success(let fetchedNickname):
                     if let nickname = fetchedNickname {
                         self.nickname = nickname
+                        print("Fetched nickname: \(nickname)")
                     } else {
                         errorMessage = "No profile exists, please create one."
+                        print("No profile found")
                     }
                 case .failure(let error):
                     errorMessage = error.localizedDescription
+                    print("Error fetching profile: \(error.localizedDescription)")
                 }
             }
         }

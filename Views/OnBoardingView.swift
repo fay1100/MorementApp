@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftUI
 
 struct OnboardingView: View {
     var onboardingData: [OnboardingItem] = [
@@ -71,6 +72,7 @@ struct OnboardingView: View {
             .onAppear {
                 checkUserProfileExistence()
             }
+            .ignoresSafeArea(.keyboard) // Add this line to ignore keyboard safe area
        }
     }
 
@@ -131,10 +133,12 @@ struct OnboardingSlideView: View {
             if isLastSlide {
                 TextField("Enter your name", text: $userName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
             }
 
             Text(item.description)
                 .multilineTextAlignment(.center)
+                .padding()
         }.padding()
     }
 }
