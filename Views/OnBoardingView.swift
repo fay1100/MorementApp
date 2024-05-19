@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftUI
 
 struct OnboardingView: View {
     var onboardingData: [OnboardingItem] = [
@@ -46,7 +45,7 @@ struct OnboardingView: View {
                 }) {
                     Text(currentPage == (userHasProfile ? onboardingData.count - 1 : onboardingData.count) ? "Let's Start" : "Next")
                         .frame(width: 358, height: 46)
-                        .background(Color("MainColor"))
+                        .background(userName.isEmpty && currentPage == onboardingData.count ? Color("GrayMid") : Color("MainColor"))
                         .foregroundColor(.black)
                         .cornerRadius(8)
                 }
@@ -78,7 +77,7 @@ struct OnboardingView: View {
 
     private func checkUserProfileExistence() {
         let onboardingCompleted = UserDefaults.standard.bool(forKey: "OnboardingCompleted")
-        if onboardingCompleted {
+        if (onboardingCompleted) {
             self.isOnboardingComplete = true
             return
         }
@@ -158,6 +157,7 @@ struct PageControl: View {
         }
     }
 }
+
 
 struct OnboardingView_Previews: PreviewProvider {
     static var previews: some View {

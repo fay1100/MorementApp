@@ -372,7 +372,7 @@ struct BoardView: View {
                     ToolbarView(showStickers: $showStickers, addStickyNote: addStickyNoteToBoard, isImagePickerPresented: $isImagePickerPresented)
                 }
             }
-            .background(Color("GrayLight")) // Match the main view's background color
+          
         }
     }
     
@@ -383,7 +383,6 @@ struct BoardView: View {
                     .background(Color.white)
                     .cornerRadius(16)
                     .shadow(radius: 8)
-                    .transition(.move(edge: .top))
             }
         }
     }

@@ -16,10 +16,10 @@ struct MembersListView: View {
                     HStack {
                         Circle()
                             .stroke(Color.black, lineWidth: 0.2)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 35, height: 40)
                             .overlay(
                                 Text(firstCharacter(of: member))
-                                    .font(.system(size: 24))
+                                    .font(.system(size: 20))
                                     .foregroundColor(.black),
                                 alignment: .center
                             )
