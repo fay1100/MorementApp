@@ -78,6 +78,10 @@ struct JoinBoardView: View {
                 isJoining = false
                 switch result {
                 case .success(let boardRecord):
+                    guard let isAccepting = boardRecord["isAcceptingMembers"] as? NSNumber, isAccepting.boolValue else {
+                        joinError = "This board is not accepting new members."
+                        return
+                    }
                     boardTitle = boardRecord["title"] as? String ?? "Unknown"
                     ownerNickname = (boardRecord["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
                     proceedToAddMember(boardRecord: boardRecord)

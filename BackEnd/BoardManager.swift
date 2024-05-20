@@ -94,6 +94,7 @@ class BoardManager {
         }
     }
     
+    
     func createImageAsset(from image: UIImage) -> CKAsset? {
         guard let data = image.jpegData(compressionQuality: 0.7) else { return nil }
         let fileURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".jpg")
