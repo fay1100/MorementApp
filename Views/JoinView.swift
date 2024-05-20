@@ -73,39 +73,20 @@ struct JoinBoardView: View {
     private func joinBoard() {
         let cleanBoardID = boardID.trimmingCharacters(in: .whitespacesAndNewlines)
         isJoining = true
-        joinError = nil
-        print("Attempting to join board with ID: \(cleanBoardID)")
-        
         BoardManager.shared.fetchBoardByBoardID(cleanBoardID) { [self] result in
             DispatchQueue.main.async {
                 isJoining = false
                 switch result {
                 case .success(let boardRecord):
-                    print("Board found: \(boardRecord)")
                     boardTitle = boardRecord["title"] as? String ?? "Unknown"
                     ownerNickname = (boardRecord["owner"] as? CKRecord.Reference)?.recordID.recordName ?? "Unknown"
-                    BoardManager.shared.fetchBoardAcceptance(boardID: cleanBoardID) { acceptanceResult in
-                        switch acceptanceResult {
-                        case .success(let isAcceptingMembers):
-                            print("Board acceptance status: \(isAcceptingMembers)")
-                            if isAcceptingMembers {
-                                proceedToAddMember(boardRecord: boardRecord)
-                            } else {
-                                joinError = "This board is not accepting new members."
-                            }
-                        case .failure(let error):
-                            joinError = "Failed to check board acceptance status: \(error.localizedDescription)"
-                            print("Error checking board acceptance status: \(error)")
-                        }
-                    }
+                    proceedToAddMember(boardRecord: boardRecord)
                 case .failure(let error):
                     joinError = "Failed to join the board: \(error.localizedDescription)"
-                    print("Error joining board: \(error)")
                 }
             }
         }
     }
-
 
     private func proceedToAddMember(boardRecord: CKRecord) {
         BoardManager.shared.addMemberToBoard(memberNickname: nickname, boardID: boardRecord.recordID.recordName) { [self] addMemberResult in
@@ -113,13 +94,20 @@ struct JoinBoardView: View {
                 isJoining = false
                 switch addMemberResult {
                 case .success():
+                    print("Navigation to board")
                     navigateToBoard = true
                 case .failure(let error):
+                    print("Error adding member: \(error.localizedDescription)")
                     joinError = "Failed to add member to the board: \(error.localizedDescription)"
                 }
             }
         }
     }
+
+
+
+
+
 }
 struct JoinBoardView_Previews: PreviewProvider {
     @State static var nickname = "SampleNickname"
